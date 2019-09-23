@@ -1,5 +1,7 @@
-require "bundler/setup"
-require "steel_wheel"
+require 'bundler/setup'
+require 'pry'
+require 'rspec_vars_helper'
+require 'steel_wheel'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -11,4 +13,6 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  config.include RspecVarsHelper
 end
