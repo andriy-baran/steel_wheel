@@ -39,8 +39,29 @@ RSpec.describe SteelWheel::Operation do
 
   it { expect(operation_class).to respond_to(:controller) }
   it { expect(operation_class).to respond_to(:parser_class) }
+  it { expect(operation_class).to respond_to(:formatter_class) }
 
-  # inheriting
+ describe 'inheritance' do
+    vars do
+      child_operation_class do
+        Class.new(operation_class) do
+          formatter do
+            def call
+              { id: id, child: true }
+            end
+          end
+        end
+      end
+    end
+
+    it { expect(child_operation_class).to respond_to(:parser_class) }
+    it { expect(child_operation_class).to respond_to(:formatter_class) }
+
+    it 'overrides controllers' do
+      operation = child_operation_class.test_instance(value.to_json)
+      expect(operation.call).to eq(value.merge(child: true))
+    end
+ end
 
   describe '#call' do
     it 'when everything is ok' do
