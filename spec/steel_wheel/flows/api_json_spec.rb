@@ -262,6 +262,13 @@ RSpec.describe SteelWheel::Operation do
       end
     end
 
-    # context extensions
+    context 'when context is extended' do
+      it 'returns correct result' do
+        operation = operation_class.from_params({id: 1}) do |ctx|
+          ctx.new_value = 15
+        end
+        expect(operation.action.new_value).to eq 15
+      end
+    end
   end
 end
