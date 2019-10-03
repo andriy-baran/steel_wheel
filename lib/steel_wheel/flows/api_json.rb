@@ -8,6 +8,15 @@ module SteelWheel
       end
 
       module ClassMethods
+        def inherited(subclass)
+          subclass.errors_format(&self.errors_format)
+          super
+        end
+
+        def errors_format(&block)
+          block_given? ? @errors_format = block : @errors_format ||= ->(text){{error: 'error',message: text}}
+        end
+
         def from_params(params, &block)
           raise "#{self.name} has no params defined. Please use params {} or params <class name> to define it." if @params_class.nil?
           raise "#{self.name} has no context defined. Please use context {} or context <class name> to define it." if @context_class.nil?
@@ -18,7 +27,7 @@ module SteelWheel
           create_op = ->(action) { new(action) }
           create_noop = ->(result) { new(nil, result).tap{|op| op.singleton_class.prepend(NOOP) } }
           create_result = ->(status, text) { Result.new(content_type: 'application/json', status: status, text: text) }.curry
-          error_json_result = ->(text, status) { create_result.call(status).call({ error: 'error', message: text}.to_json)  }
+          error_json_result = ->(text, status) { create_result.call(status).call(errors_format.call(text).to_json)  }
           create_noop_error_json = ->(text, status){
             create_noop.call(error_json_result.call(text, status))
           }

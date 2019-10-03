@@ -218,6 +218,35 @@ RSpec.describe SteelWheel::Operation do
 
   end
 
+  describe '.error_format' do
+    before do
+      operation_class.params(params_class)
+      operation_class.context(context_class)
+      operation_class.action(action_class)
+      operation_class.errors_format do |error_message|
+        { errors: error_message }
+      end
+    end
+
+    context 'when base class' do
+      it 'has customized errors' do
+        op = operation_class.from_params({id: nil})
+        op.call
+        expect(op.result.to_h[:text]).to eq({ errors: "Id can't be blank" }.to_json)
+      end
+    end
+
+    context 'when child class' do
+      it 'has customized errors' do
+        child_class = Class.new(operation_class)
+        op = child_class.from_params({id: nil})
+        op.call
+        expect(op.result.to_h[:text]).to eq({ errors: "Id can't be blank" }.to_json)
+      end
+    end
+
+  end
+
   describe '#call' do
     it {
       operation = operation_class.new(action)
