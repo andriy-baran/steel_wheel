@@ -8,6 +8,10 @@ module SteelWheel
       'SteelWheel::Params'
     end
 
+    %w(Integer Decimal Float Bool String Array Date DateTime Time).each do |type|
+      self.singleton_class.define_method(type.downcase) { SteelWheel::Types.const_get(type) }
+    end
+
     def validate_array(attr_name)
       public_send(attr_name).each.with_index do |element, i|
         if element.invalid?

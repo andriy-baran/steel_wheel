@@ -10,7 +10,7 @@ require 'steel_wheel/params'
 require 'steel_wheel/operation'
 require 'steel_wheel/flows/api_json'
 require 'steel_wheel/version'
-require 'types'
+require 'steel_wheel/types'
 
 module SteelWheel
   class Error < StandardError; end

@@ -2,8 +2,8 @@ RSpec.describe SteelWheel::Params do
   vars do
     params_class do
       Class.new(SteelWheel::Params) do
-        attribute :id, Types::Optional::Integer
-        attribute :quantity, Types::Optional::Integer.default(1)
+        attribute :id, integer
+        attribute :quantity, integer.default(1)
 
         validates :id, :quantity, presence: { message: "can't be blank" }
         validates :quantity, numericality: { only_integer: true, greater_than: 0 }

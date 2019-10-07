@@ -4,7 +4,7 @@ RSpec.describe SteelWheel::Operation do
   vars do
     params_class do
       Class.new(SteelWheel::Params) do
-        attribute :id, Types::Optional::Integer
+        attribute :id, integer
 
         validates :id, presence: { message: "can't be blank" }
       end
@@ -82,7 +82,7 @@ RSpec.describe SteelWheel::Operation do
     context 'when class provided and block provided' do
       it 'dynamically creates a subclass of SteelWheel::Params and evaluates code block in it' do
         operation_class.params do
-          attribute :quantity, Types::Optional::Integer.default(1)
+          attribute :quantity, integer.default(1)
         end
         expect(operation_class.params_class.superclass).to eq SteelWheel::Params
         expect(operation_class.params_class.new.quantity).to eq 1
