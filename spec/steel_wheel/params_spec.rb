@@ -140,7 +140,7 @@ RSpec.describe SteelWheel::Params do
       end
 
       it 'returns hash with correct values' do
-        params_obj.validate_nested
+        params_obj.valid?
         expect(OpenStruct.new(params_obj.errors.messages)).to have_attributes(
           :"sections/0/id"=>an_instance_of(Array),
           :"sections/0/post/id"=>an_instance_of(Array),

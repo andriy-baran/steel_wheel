@@ -12,6 +12,10 @@ module SteelWheel
       self.singleton_class.define_method(type.downcase) { SteelWheel::Types.const_get(type) }
     end
 
+    validate do
+      validate_nested
+    end
+
     def validate_nested
       run_nested_validations = proc do |attr_name, value, array_index, error_key_prefix|
         case value
