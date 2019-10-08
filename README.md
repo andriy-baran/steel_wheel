@@ -2,6 +2,7 @@
 
 ## Intention
 The gem is intended to provide better development experience for rails developers, by introduction the new layer that provides enchanced interface. The new abstractions and flows helps developers focus on domain code and forget about framework details. In a future it will allow to make testing truly isolated 
+![](https://github.com/andriy-baran/steel_wheel/blob/master/assets/action_diagram.png?raw=true)
 ## Design
 A key principle used in design of the library is **Separation of Concerns**. Based on experience and following analysis 4 phases were defined in every rails controller.
 1. **Input validations and preparations**
@@ -26,19 +27,31 @@ This class of ojects handles `params` validations and type coercion, based on `d
 ```ruby
 # app/params/api/v2/icqa/move_params.rb
 class Api::V2::Icqa::MoveParams < SteelWheel::Params
-  attribute :receive_cart_id, Types::Optional::Integer
-  attribute :i_am_sure, Types::Optional::Bool
-  attribute :location_code, Types::Optional::String.default('')
-  attribute :options, Types::Optional::Array do
-    attribute :option_type_count, Types::Optional::Integer
-    attribute :option_type_value, Types::Optional::Integer
+  attribute :receive_cart_id, integer
+  attribute :i_am_sure, bool
+  attribute :location_code, string.default('')
+  attribute :sections, struct do
+    attribute :from, string
+    attribute :to, string
+  end
+  attribute :options, array.of(struct) do
+    attribute :option_type_count, integer
+    attribute :option_type_value, integer
 
     validates :option_type_count, :option_type_value, presence: { message: "can't be blank" }
   end
 
   validates :receive_cart_id, :location_code, presence: { message: "can't be blank" }
-  validate { validate_array(:options) }
 end
+```
+Validation messages for nested attributes will look like this.
+```ruby
+{  
+  :"sections/0/id"=>an_instance_of(Array),
+  :"sections/0/post/id"=>an_instance_of(Array),
+  :"post/id"=>an_instance_of(Array),
+  :"post/sections/0/id"=>an_instance_of(Array)
+ }
 ```
 
 ### SteelWheel::Context
