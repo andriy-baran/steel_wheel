@@ -3,12 +3,15 @@ module SteelWheel
     include Memery
     include ActiveModel::Validations
 
-    require 'steel_wheel/context/active_model_errors/skip_keys'
-    include ActiveModelErrors::SkipKeys[:not_found, :forbidden, :unprocessable_entity]
+    def self.skip_keys(*keys)
+      include SteelWheel::SkipActiveModelErrorsKeys[*keys]
+    end
 
     def self.name
       'SteelWheel::Context'
     end
+
+    skip_keys(:not_found, :forbidden, :unprocessable_entity)
 
     def error_key
       errors.keys.first
