@@ -10,7 +10,7 @@ module SteelWheel
       @controllers ||= {}
     end
 
-    def self.controller(method_name, base_class: nil?)
+    def self.controller(method_name, base_class: nil)
       self.singleton_class.class_eval { attr_accessor :"#{method_name}_class" }
       self.singleton_class.send(:define_method, method_name) do |klass = nil, &block|
         controller_class = self.public_send(:"#{method_name}_class")

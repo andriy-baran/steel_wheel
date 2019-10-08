@@ -9,7 +9,7 @@ module SteelWheel
     end
 
     %w(Integer Decimal Float Bool String Array Date DateTime Time Struct).each do |type|
-      self.singleton_class.define_method(type.downcase) { SteelWheel::Types.const_get(type) }
+      self.singleton_class.send(:define_method, type.downcase) { SteelWheel::Types.const_get(type) }
     end
 
     validate do

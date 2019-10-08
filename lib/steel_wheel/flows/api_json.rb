@@ -21,9 +21,9 @@ module SteelWheel
           raise "#{self.name} has no params defined. Please use params {} or params <class name> to define it." if @params_class.nil?
           raise "#{self.name} has no context defined. Please use context {} or context <class name> to define it." if @context_class.nil?
           raise "#{self.name} has no action defined. Please use action {} or action <class name> to define it." if @action_class.nil?
-          create_params = ->(params) { @params_class.new(params) }
-          create_context = ->(attributes) { @context_class.new(attributes) }
-          create_action = ->(context) { @action_class.new(context) }
+          create_params = ->(params) { params_class.new(params) }
+          create_context = ->(attributes) { context_class.new(attributes) }
+          create_action = ->(context) { action_class.new(context) }
           create_op = ->(action) { new(action) }
           create_noop = ->(result) { new(nil, result).tap{|op| op.singleton_class.prepend(NOOP) } }
           create_result = ->(status, text) { Result.new(content_type: 'application/json', status: status, text: text) }.curry
@@ -56,13 +56,13 @@ module SteelWheel
       end
 
       def self.included(receiver)
+        receiver.extend         ClassMethods
+        receiver.send :include, Initializer
         receiver.class_eval do
           controller :params, base_class: SteelWheel::Params
           controller :context, base_class: SteelWheel::Context
           controller :action, base_class: SteelWheel::Action
         end
-        receiver.extend         ClassMethods
-        receiver.send :include, Initializer
       end
     end
   end
