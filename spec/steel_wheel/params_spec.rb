@@ -165,4 +165,34 @@ RSpec.describe SteelWheel::Params do
       end
     end
   end
+
+  context 'dsl' do
+    vars do
+      params_class do
+        Class.new(SteelWheel::Params) do
+          extend SteelWheel::Params::DSL
+
+          quantity integer.default(1)
+          posts each do
+            content string.default('')
+          end
+          user has do
+            role string
+          end
+        end
+      end
+      attributes do
+        { quantity: 3, posts: [{content: nil}, {content: 'story'}], user: {role: 'man'}}
+      end
+      params_obj { params_class.new(attributes) }
+    end
+
+    it 'returns hash with correct values' do
+      expect(params_obj.to_hash).to eq({
+        posts: [{content: ''}, {content: 'story'}],
+        quantity: 3,
+        user: {:role=>'man'}
+      })
+    end
+  end
 end

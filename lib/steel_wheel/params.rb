@@ -8,8 +8,8 @@ module SteelWheel
       'SteelWheel::Params'
     end
 
-    %w(Integer Decimal Float Bool String Array Date DateTime Time Struct).each do |type|
-      self.singleton_class.send(:define_method, type.downcase) { SteelWheel::Types.const_get(type) }
+    %w(Integer Decimal Float Bool String Array Date DateTime Time Struct StructDSL).each do |type|
+      self.singleton_class.send(:define_method, type.underscore) { SteelWheel::Types.const_get(type) }
     end
 
     validate do
