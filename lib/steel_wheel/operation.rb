@@ -1,8 +1,9 @@
 module SteelWheel
   class Operation
     def self.inherited(subclass)
-      self.controllers.each_key do |controller|
-        subclass.public_send(:"#{controller}_class=", self.public_send(:"#{controller}_class"))
+      controllers.each_key do |controller|
+        klass = public_send(:"#{controller}_class")
+        subclass.public_send(:"#{controller}_class=", klass)
       end
     end
 
@@ -11,30 +12,28 @@ module SteelWheel
     end
 
     def self.controller(method_name, base_class: Class.new)
-      self.singleton_class.class_eval { attr_accessor :"#{method_name}_class" }
-      self.singleton_class.send(:define_method, method_name) do |klass = nil, &block|
-        controller_class = self.public_send(:"#{method_name}_class")
-        if controller_class.present? && controller_class <= base_class && block_given? # inherited
-          instance_variable_set(:"@#{method_name}_class", Class.new(controller_class, &block))
+      singleton_class.class_eval { attr_accessor :"#{method_name}_class" }
+      singleton_class.send(:define_method, method_name) do |klass = nil, &block|
+        controller_class = public_send(:"#{method_name}_class")
+        subclass_error_msg = "must be a subclass of #{base_class.name}"
+        raise_error = -> { raise(ArgumentError, subclass_error_msg) }
+        if controller_class.present? # inherited
+          raise_error.call unless controller_class <= base_class
+
+          controller_class = Class.new(controller_class, &block) if block
+          instance_variable_set(:"@#{method_name}_class", controller_class)
+        elsif klass.present? && block.nil?
+          raise_error.call unless klass <= base_class
+
+          instance_variable_set(:"@#{method_name}_class", klass)
+        elsif klass.nil? && !block.nil?
+          controller_class = Class.new(base_class, &block)
+          instance_variable_set(:"@#{method_name}_class", controller_class)
         else
-          if base_class.present?
-            if klass.present?
-              raise ArgumentError.new("must be a subclass of #{base_class.name}") unless klass <= base_class
-              instance_variable_set(:"@#{method_name}_class", klass)
-            else
-              raise ArgumentError.new('please provide a block') if block_given?
-              instance_variable_set(:"@#{method_name}_class", Class.new(base_class, &block))
-            end
-          else
-            if block_given?
-              instance_variable_set(:"@#{method_name}_class", Class.new(base_class, &block))
-            else
-              raise ArgumentError.new('please provide a block') if block_given?
-            end
-          end
+          raise(ArgumentError, 'please provide a block or class')
         end
+        controllers[method_name] = controller_class
       end
-      self.controllers[method_name] = base_class
     end
 
     def call

@@ -18,9 +18,9 @@ module SteelWheel
         end
 
         def from_params(params, &block)
-          raise "#{self.name} has no params defined. Please use params {} or params <class name> to define it." if @params_class.nil?
-          raise "#{self.name} has no context defined. Please use context {} or context <class name> to define it." if @context_class.nil?
-          raise "#{self.name} has no action defined. Please use action {} or action <class name> to define it." if @action_class.nil?
+          raise "#{self.name} has no params defined. Please use params {} or params <class name> to define it." if params_class.nil?
+          raise "#{self.name} has no context defined. Please use context {} or context <class name> to define it." if context_class.nil?
+          raise "#{self.name} has no action defined. Please use action {} or action <class name> to define it." if action_class.nil?
           create_params = ->(params) { params_class.new(params) }
           create_context = ->(attributes) { context_class.new(attributes) }
           create_action = ->(context) { action_class.new(context) }
