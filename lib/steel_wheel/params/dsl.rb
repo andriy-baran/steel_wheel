@@ -9,11 +9,11 @@ module SteelWheel
         struct(&block)
       end
 
-      def method_missing(meth, *args, &block)
-        if respond_to?(meth)
+      def method_missing(method_name, *args, &block)
+        if respond_to?(method_name)
           super
         else
-          public_send(:attribute, meth, *args, &block)
+          public_send(:attribute, method_name, *args, &block)
         end
       end
     end
