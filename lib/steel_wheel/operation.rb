@@ -63,9 +63,11 @@ module SteelWheel
       obj = nil
       old_controller = nil
       decorator_obj = nil
+      invalid_state = ->(o) { o.respond_to?(:valid?) && !o.valid? }
       controllers.each.with_index do |(controller, base_class), i|
         if i.zero?
           obj = base_class.new(input)
+          break if invalid_state.call(obj)
         else
           base_class.singleton_class.class_eval do
             attr_accessor :__predecessor__
@@ -81,7 +83,7 @@ module SteelWheel
               end
             end
 
-            def respond_to_missing?
+            def respond_to_missing?(method_name, include_private = false)
               !public_send(__predecessor__).nil?
             end
           end
@@ -89,6 +91,7 @@ module SteelWheel
             attr_accessor decorator_obj.__predecessor__
           end
           decorator_obj.public_send(:"#{decorator_obj.__predecessor__}=", obj)
+          break if invalid_state.call(decorator_obj)
           obj = decorator_obj
         end
         old_controller = controller
