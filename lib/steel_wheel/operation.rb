@@ -59,6 +59,22 @@ module SteelWheel
       self
     end
 
+    def self.__sw_decoration_module__
+      Module.new do
+        def method_missing(name, *attrs, &block)
+          if public_send(__sw_predecessor__)
+            public_send(__sw_predecessor__).public_send(name, *attrs, &block)
+          else
+            super
+          end
+        end
+
+        def respond_to_missing?(method_name, include_private = false)
+          !public_send(__sw_predecessor__).nil?
+        end
+      end
+    end
+
     def self.prepare
       obj = nil
       old_controller = nil
@@ -70,27 +86,15 @@ module SteelWheel
           break if invalid_state.call(obj)
         else
           base_class.singleton_class.class_eval do
-            attr_accessor :__predecessor__
+            attr_accessor :__sw_predecessor__
           end
           decorator_obj = base_class.new
-          decorator_obj.__predecessor__ = old_controller
-          decorator_obj.instance_eval do
-            def method_missing(name, *attrs, &block)
-              if public_send(__predecessor__)
-                public_send(__predecessor__).public_send(name, *attrs, &block)
-              else
-                super
-              end
-            end
-
-            def respond_to_missing?(method_name, include_private = false)
-              !public_send(__predecessor__).nil?
-            end
-          end
+          decorator_obj.__sw_predecessor__ = old_controller
+          decorator_obj.extend(__sw_decoration_module__)
           decorator_obj.singleton_class.class_eval do
-            attr_accessor decorator_obj.__predecessor__
+            attr_accessor decorator_obj.__sw_predecessor__
           end
-          decorator_obj.public_send(:"#{decorator_obj.__predecessor__}=", obj)
+          decorator_obj.public_send(:"#{decorator_obj.__sw_predecessor__}=", obj)
           break if invalid_state.call(decorator_obj)
           obj = decorator_obj
         end
