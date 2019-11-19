@@ -27,6 +27,8 @@ module SteelWheel
       singleton_class.send(:define_method, method_name) do |klass = nil, &block|
         controller_class = public_send(:"#{method_name}_class")
         subclass_error_msg = "must be a subclass of #{base_class.name}"
+        missing_body_error_msg = 'please provide a block or class'
+        missing_body_error = -> { raise(ArgumentError, missing_body_error_msg) }
         raise_error = -> { raise(ArgumentError, subclass_error_msg) }
         if controller_class.present? # inherited
           raise_error.call unless controller_class <= base_class
@@ -41,7 +43,7 @@ module SteelWheel
           controller_class = Class.new(base_class, &block)
           instance_variable_set(:"@#{method_name}_class", controller_class)
         else
-          raise(ArgumentError, 'please provide a block or class')
+          missing_body_error.call
         end
         controllers[method_name] = controller_class
       end
