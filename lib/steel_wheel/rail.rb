@@ -74,6 +74,19 @@ module SteelWheel
       end
     end
 
+    def self.wrap(current_object, wrapper_object:, accessor:)
+      wrapper_object.singleton_class.class_eval do
+        attr_accessor :__sw_predecessor__
+      end
+      wrapper_object.__sw_predecessor__ = accessor
+      wrapper_object.extend(__sw_decoration_module__)
+      wrapper_object.singleton_class.class_eval do
+        attr_accessor wrapper_object.__sw_predecessor__
+      end
+      wrapper_object.public_send(:"#{wrapper_object.__sw_predecessor__}=", current_object)
+      wrapper_object
+    end
+
     def self.prepare
       current_object = nil
       wrapper_object = nil
@@ -83,19 +96,12 @@ module SteelWheel
         if i.zero?
           current_object = base_class.new(input)
         else
-          wrapper_object = base_class.new
-          wrapper_object.singleton_class.class_eval do
-            attr_accessor :__sw_predecessor__
-          end
-          wrapper_object.__sw_predecessor__ = previous_controller
-          wrapper_object.extend(__sw_decoration_module__)
-          wrapper_object.singleton_class.class_eval do
-            attr_accessor wrapper_object.__sw_predecessor__
-          end
-          wrapper_object.public_send(:"#{wrapper_object.__sw_predecessor__}=", current_object)
-          current_object = wrapper_object
+          wrapped_object = wrap(current_object,
+                                wrapper_object: base_class.new,
+                                accessor: previous_controller)
+          current_object = wrapped_object
         end
-        break if invalidate_state.call(wrapper_object)
+        break if invalidate_state.call(wrapped_object)
         previous_controller = controller
       end
       new(current_object)
