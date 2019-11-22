@@ -74,7 +74,7 @@ module SteelWheel
       end
     end
 
-    def self.wrap(current_object, wrapper_object:, accessor:)
+    def self.__sw_wrap__(current_object, wrapper_object:, accessor:)
       wrapper_object.singleton_class.class_eval do
         attr_accessor :__sw_predecessor__
       end
@@ -87,24 +87,36 @@ module SteelWheel
       wrapper_object
     end
 
-    def self.prepare
-      current_object = nil
-      wrapper_object = nil
-      previous_controller = nil
-      invalidate_state = ->(o) { o.class.ancestors.include?(ActiveModel::Validations) && o.invalid? }
-      controllers.each.with_index do |(controller, base_class), i|
-        if i.zero?
-          current_object = base_class.new(input)
-        else
-          wrapped_object = wrap(current_object,
-                                wrapper_object: base_class.new,
-                                accessor: previous_controller)
-          current_object = wrapped_object
-        end
-        break if invalidate_state.call(wrapped_object)
-        previous_controller = controller
+    def self.__sw_invalidate_state__
+      ->(o) { o.class.ancestors.include?(ActiveModel::Validations) && o.invalid? }
+    end
+
+    def self.__sw_wrap_input__
+      ->(klass) { klass.new(self.input) }
+    end
+
+    def self.__sw_decorate__(cascade, base_class, i)
+      if i.zero? && cascade.main?
+        cascade.current_object = __sw_wrap_input__.call(base_class)
+      else
+        cascade.wrapped_object = __sw_wrap__(cascade.current_object,
+                                     wrapper_object: base_class.new,
+                                     accessor: cascade.previous_controller)
+        cascade.current_object = cascade.wrapped_object
       end
-      new(current_object)
+    end
+
+    def self.__sw_cascade_decorating__(cascade)
+      lambda do |(controller, base_class), i|
+        __sw_decorate__(cascade, base_class, i)
+        break if __sw_invalidate_state__.call(cascade.wrapped_object)
+        cascade.previous_controller = controller
+      end
+    end
+
+    def self.prepare(cascade = SteelWheel::CascadingState.new)
+      controllers.each.with_index(&__sw_cascade_decorating__(cascade))
+      new(cascade.current_object)
     end
 
     def success?
