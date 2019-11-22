@@ -1,17 +1,17 @@
 module SteelWheel
   class CascadingState
-    attr_accessor :current_object, :wrapped_object, :previous_controller, :type
+    attr_accessor :current_object, :wrapped_object, :previous_controller, :branch
 
     def initialize
-      @type = :main
+      @step = 0
     end
 
-    def main?
-      type == :main
+    def inc_step
+      @step += 1
     end
 
-    def branch?
-      type == :branch
+    def first_step?
+      @step.zero?
     end
   end
 end

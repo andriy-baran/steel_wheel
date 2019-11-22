@@ -123,11 +123,11 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
-            controller :mash, base_class: C1 = Class.new(OpenStruct)
-            controller :authorize, base_class: C2 = Class.new(Object)
-            controller :sync, base_class: C3 = Class.new(Object)
-            controller :store, base_class: C4 = Class.new(Object)
-            controller :formatter, base_class: C5 = Class.new(Object)
+            controller :mash, base_class: X1 = Class.new(OpenStruct)
+            controller :authorize, base_class: X2 = Class.new(Object)
+            controller :sync, base_class: X3 = Class.new(Object)
+            controller :store, base_class: X4 = Class.new(Object)
+            controller :formatter, base_class: X5 = Class.new(Object)
             mash do
               def a
                 'a'
@@ -169,6 +169,178 @@ RSpec.describe SteelWheel::Operation do
       it 'result has errors' do
         operation = operation_class.from(value).to(:json).prepare
         expect(operation.result.errors).to_not be_empty
+      end
+    end
+  end
+
+  describe 'dispatchers' do
+    context 'when no errors' do
+      vars do
+        operation_class do
+          Class.new(SteelWheel::Operation) do
+            controller :formatter
+            controller :final
+            controller :mash, base_class: Z1 = Class.new(Struct.new(:id, keyword_init: true))
+
+            mash do
+              def a
+                'a'
+              end
+            end
+
+            dispatch do |cxt|
+              cxt.a == 'a' ? :left : :right
+            end
+
+            formatter do
+              def i
+                'i'
+              end
+            end
+
+            final do
+              def y
+                'y'
+              end
+            end
+
+            branch :left do
+              controller :authorize
+              controller :sync
+              authorize do
+                include ActiveModel::Validations
+                def o
+                  'o'
+                end
+
+                validate do
+                  errors.add(:base, "Error with id=#{id}") if id == 4
+                end
+              end
+
+              sync do
+                def u
+                  'u'
+                end
+              end
+            end
+
+            branch :right do
+              controller :store
+
+              store do
+                def e
+                  'e'
+                end
+              end
+            end
+
+            def call
+              "#{result.a}#{result.o}#{result.u}#{result.e}y#{result.i}#{result.id}"
+            end
+          end
+        end
+        value { {id: 3} }
+      end
+
+      it 'result has errors' do
+        operation = operation_class.from(value).to(:json).prepare
+        expect(operation.result.a).to eq 'a'
+        expect(operation.result.o).to eq 'o'
+        expect(operation.result.u).to eq 'u'
+        expect(operation.result.i).to eq 'i'
+        expect(operation.result.y).to eq 'y'
+        expect {
+          operation.result.e
+        }.to raise_error(NoMethodError)
+      end
+    end
+
+    context 'when some errors' do
+      vars do
+        operation_class do
+          Class.new(SteelWheel::Operation) do
+            controller :formatter
+            controller :final
+            controller :mash, base_class: Z1 = Class.new(Struct.new(:id, keyword_init: true))
+
+            mash do
+              def a
+                'a'
+              end
+            end
+
+            dispatch do |cxt|
+              cxt.a == 'a' ? :left : :right
+            end
+
+            formatter do
+              def i
+                'i'
+              end
+            end
+
+            final do
+              def y
+                'y'
+              end
+            end
+
+            branch :left do
+              controller :authorize
+              controller :sync
+              authorize do
+                include ActiveModel::Validations
+                def o
+                  'o'
+                end
+
+                validate do
+                  errors.add(:base, "Error with id=#{id}") if id == 3
+                end
+              end
+
+              sync do
+                def u
+                  'u'
+                end
+              end
+            end
+
+            branch :right do
+              controller :store
+
+              store do
+                def e
+                  'e'
+                end
+              end
+            end
+
+            def call
+              "#{result.a}#{result.o}#{result.u}#{result.e}y#{result.i}#{result.id}"
+            end
+          end
+        end
+        value { {id: 3} }
+      end
+
+      it 'result has errors' do
+        operation = operation_class.from(value).to(:json).prepare
+        expect(operation.result.a).to eq 'a'
+        expect(operation.result.o).to eq 'o'
+        expect {
+          operation.result.u
+        }.to raise_error(NoMethodError)
+        expect {
+          operation.result.i
+        }.to raise_error(NoMethodError)
+        expect {
+          operation.result.y
+        }.to raise_error(NoMethodError)
+        expect {
+          operation.result.e
+        }.to raise_error(NoMethodError)
       end
     end
   end

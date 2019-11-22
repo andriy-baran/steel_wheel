@@ -96,7 +96,7 @@ module SteelWheel
     end
 
     def self.__sw_decorate__(cascade, base_class, i)
-      if i.zero? && cascade.main?
+      if cascade.first_step?
         cascade.current_object = __sw_wrap_input__.call(base_class)
       else
         cascade.wrapped_object = __sw_wrap__(cascade.current_object,
@@ -111,6 +111,7 @@ module SteelWheel
         __sw_decorate__(cascade, base_class, i)
         break if __sw_invalidate_state__.call(cascade.wrapped_object)
         cascade.previous_controller = controller
+        cascade.inc_step
       end
     end
 
