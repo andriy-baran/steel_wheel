@@ -9,7 +9,7 @@ RSpec.describe SteelWheel::Operation do
         end
 
         controller :parser, base_class: Class.new
-        controller :formatter, base_class: Struct.new(:id, keyword_init: true)
+        controller :formatter, base_class: Class.new
 
         parser do
           def parse(json)
@@ -18,6 +18,10 @@ RSpec.describe SteelWheel::Operation do
         end
 
         formatter do
+          attr_reader :id
+          def initialize(opts)
+            @id = opts[:id]
+          end
           def call
             { id: id, success: true }
           end
@@ -34,7 +38,7 @@ RSpec.describe SteelWheel::Operation do
         end
       end
     end
-    value { {id: 3} }
+    value { { id: 3 } }
   end
 
   it { expect(operation_class).to respond_to(:controller) }
@@ -110,7 +114,7 @@ RSpec.describe SteelWheel::Operation do
             end
           end
         end
-        value { {id: 3} }
+        value { { id: 3 } }
       end
 
       it 'result has access to all nested methods' do
@@ -163,7 +167,7 @@ RSpec.describe SteelWheel::Operation do
             end
           end
         end
-        value { {id: 3} }
+        value { { id: 3 } }
       end
 
       it 'result has errors' do
@@ -180,9 +184,13 @@ RSpec.describe SteelWheel::Operation do
           Class.new(SteelWheel::Operation) do
             controller :formatter
             controller :final
-            controller :mash, base_class: Z1 = Class.new(Struct.new(:id, keyword_init: true))
+            controller :mash, base_class: Z1 = Class.new
 
             mash do
+              attr_reader :id
+              def initialize(opts)
+                @id = opts[:id]
+              end
               def a
                 'a'
               end
@@ -240,7 +248,7 @@ RSpec.describe SteelWheel::Operation do
             end
           end
         end
-        value { {id: 3} }
+        value { { id: 3 } }
       end
 
       it 'result has errors' do
@@ -250,9 +258,9 @@ RSpec.describe SteelWheel::Operation do
         expect(operation.result.u).to eq 'u'
         expect(operation.result.i).to eq 'i'
         expect(operation.result.y).to eq 'y'
-        expect {
+        expect do
           operation.result.e
-        }.to raise_error(NoMethodError)
+        end.to raise_error(NoMethodError)
       end
     end
 
@@ -262,9 +270,13 @@ RSpec.describe SteelWheel::Operation do
           Class.new(SteelWheel::Operation) do
             controller :formatter
             controller :final
-            controller :mash, base_class: Z1 = Class.new(Struct.new(:id, keyword_init: true))
+            controller :mash, base_class: Z1 = Class.new
 
             mash do
+              attr_reader :id
+              def initialize(opts)
+                @id = opts[:id]
+              end
               def a
                 'a'
               end
@@ -322,25 +334,25 @@ RSpec.describe SteelWheel::Operation do
             end
           end
         end
-        value { {id: 3} }
+        value { { id: 3 } }
       end
 
       it 'result has errors' do
         operation = operation_class.from(value).to(:json).prepare
         expect(operation.result.a).to eq 'a'
         expect(operation.result.o).to eq 'o'
-        expect {
+        expect do
           operation.result.u
-        }.to raise_error(NoMethodError)
-        expect {
+        end.to raise_error(NoMethodError)
+        expect do
           operation.result.i
-        }.to raise_error(NoMethodError)
-        expect {
+        end.to raise_error(NoMethodError)
+        expect do
           operation.result.y
-        }.to raise_error(NoMethodError)
-        expect {
+        end.to raise_error(NoMethodError)
+        expect do
           operation.result.e
-        }.to raise_error(NoMethodError)
+        end.to raise_error(NoMethodError)
       end
     end
   end
