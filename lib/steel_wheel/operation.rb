@@ -15,19 +15,14 @@ module SteelWheel
       branches[branch_name] = Class.new(SteelWheel::Operation, &block)
     end
 
-    def self.__sw_cascade_decorating__(cascade)
-      lambda do |(controller, base_class), i|
-        break if __sw_invalidate_state__.call(cascade.wrapped_object)
-        if controller.match(/dispatcher/)
-          dispatcher = base_class.new
-          branch_name = dispatcher.call(cascade.current_object)
-          cascade.branch = branch_name
-          branches[branch_name].prepare(cascade)
-        else
-          __sw_decorate__(cascade, base_class, i)
-          cascade.previous_controller = controller
-          cascade.inc_step
-        end
+    def self.__sw_handle_step__(cascade, base_class, controller, i)
+      if controller.match(/dispatcher/)
+        dispatcher = base_class.new
+        branch_name = dispatcher.call(cascade.current_object)
+        cascade.branch = branch_name
+        branches[branch_name].prepare(cascade)
+      else
+        super
       end
     end
   end

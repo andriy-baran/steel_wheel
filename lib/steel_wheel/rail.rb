@@ -87,17 +87,17 @@ module SteelWheel
       wrapper_object
     end
 
-    def self.__sw_invalidate_state__
-      ->(o) { o.class.ancestors.include?(ActiveModel::Validations) && o.invalid? }
+    def self.__sw_invalidate_state__(o)
+      o.class.ancestors.include?(ActiveModel::Validations) && o.invalid?
     end
 
-    def self.__sw_wrap_input__
-      ->(klass) { klass.new(self.input) }
+    def self.__sw_wrap_input__(klass)
+      klass.new(input)
     end
 
     def self.__sw_decorate__(cascade, base_class, i)
       if cascade.first_step?
-        cascade.current_object = __sw_wrap_input__.call(base_class)
+        cascade.current_object = __sw_wrap_input__(base_class)
       else
         cascade.wrapped_object = __sw_wrap__(cascade.current_object,
                                      wrapper_object: base_class.new,
@@ -106,12 +106,16 @@ module SteelWheel
       end
     end
 
+    def self.__sw_handle_step__(cascade, base_class, controller, i)
+      __sw_decorate__(cascade, base_class, i)
+      cascade.previous_controller = controller
+      cascade.inc_step
+    end
+
     def self.__sw_cascade_decorating__(cascade)
       lambda do |(controller, base_class), i|
-        __sw_decorate__(cascade, base_class, i)
-        break if __sw_invalidate_state__.call(cascade.wrapped_object)
-        cascade.previous_controller = controller
-        cascade.inc_step
+        break if __sw_invalidate_state__(cascade.wrapped_object)
+        __sw_handle_step__(cascade, base_class, controller, i)
       end
     end
 
