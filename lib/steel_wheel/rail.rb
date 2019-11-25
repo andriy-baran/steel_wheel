@@ -65,27 +65,27 @@ module SteelWheel
       else
         cascade.wrapped_object = __sw_wrap__(cascade.current_object,
                                              wrapper_object: base_class.new,
-                                             accessor: cascade.previous_controller)
+                                             accessor: cascade.previous_component)
         cascade.current_object = cascade.wrapped_object
       end
     end
 
-    def self.__sw_handle_step__(cascade, base_class, controller, i)
+    def self.__sw_handle_step__(cascade, base_class, component, i)
       __sw_decorate__(cascade, base_class, i)
-      cascade.previous_controller = controller
+      cascade.previous_component = component
       cascade.inc_step
     end
 
     def self.__sw_cascade_decorating__(cascade)
-      lambda do |(controller, base_class), i|
+      lambda do |(component, base_class), i|
         break if __sw_invalidate_state__(cascade.wrapped_object)
 
-        __sw_handle_step__(cascade, base_class, controller, i)
+        __sw_handle_step__(cascade, base_class, component, i)
       end
     end
 
     def self.prepare(cascade = SteelWheel::CascadingState.new)
-      controllers.each.with_index(&__sw_cascade_decorating__(cascade))
+      components.each.with_index(&__sw_cascade_decorating__(cascade))
       new(cascade.current_object)
     end
 

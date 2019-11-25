@@ -60,9 +60,9 @@ module SteelWheel
         receiver.extend         ClassMethods
         receiver.send :include, Initializer
         receiver.class_eval do
-          controller :params, base_class: SteelWheel::Params
-          controller :context, base_class: SteelWheel::Context
-          controller :action, base_class: SteelWheel::Action
+          component :params, base_class: SteelWheel::Params
+          component :context, base_class: SteelWheel::Context
+          component :action, base_class: SteelWheel::Action
         end
       end
     end

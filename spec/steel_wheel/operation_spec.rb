@@ -8,8 +8,8 @@ RSpec.describe SteelWheel::Operation do
           @formatter = formatter
         end
 
-        controller :parser, base_class: Class.new
-        controller :formatter, base_class: Class.new
+        component :parser, base_class: Class.new
+        component :formatter, base_class: Class.new
 
         parser do
           def parse(json)
@@ -42,7 +42,7 @@ RSpec.describe SteelWheel::Operation do
     value { { id: 3 } }
   end
 
-  it { expect(operation_class).to respond_to(:controller) }
+  it { expect(operation_class).to respond_to(:component) }
   it { expect(operation_class).to respond_to(:parser_class) }
   it { expect(operation_class).to respond_to(:formatter_class) }
 
@@ -62,7 +62,7 @@ RSpec.describe SteelWheel::Operation do
     it { expect(child_operation_class).to respond_to(:parser_class) }
     it { expect(child_operation_class).to respond_to(:formatter_class) }
 
-    it 'overrides controllers' do
+    it 'overrides components' do
       operation = child_operation_class.test_instance(value.to_json)
       expect(operation.call).to eq(value.merge(child: true))
     end
@@ -80,11 +80,11 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
-            controller :mash, base_class: C1 = Class.new(OpenStruct)
-            controller :authorize, base_class: C2 = Class.new(Object)
-            controller :sync, base_class: C3 = Class.new(Object)
-            controller :store, base_class: C4 = Class.new(Object)
-            controller :formatter, base_class: C5 = Class.new(Object)
+            component :mash, base_class: C1 = Class.new(OpenStruct)
+            component :authorize, base_class: C2 = Class.new(Object)
+            component :sync, base_class: C3 = Class.new(Object)
+            component :store, base_class: C4 = Class.new(Object)
+            component :formatter, base_class: C5 = Class.new(Object)
             mash do
               def a
                 'a'
@@ -128,11 +128,11 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
-            controller :mash, base_class: X1 = Class.new(OpenStruct)
-            controller :authorize, base_class: X2 = Class.new(Object)
-            controller :sync, base_class: X3 = Class.new(Object)
-            controller :store, base_class: X4 = Class.new(Object)
-            controller :formatter, base_class: X5 = Class.new(Object)
+            component :mash, base_class: X1 = Class.new(OpenStruct)
+            component :authorize, base_class: X2 = Class.new(Object)
+            component :sync, base_class: X3 = Class.new(Object)
+            component :store, base_class: X4 = Class.new(Object)
+            component :formatter, base_class: X5 = Class.new(Object)
             mash do
               def a
                 'a'
@@ -183,9 +183,9 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
-            controller :formatter
-            controller :final
-            controller :mash, base_class: Z1 = Class.new
+            component :formatter
+            component :final
+            component :mash, base_class: Z1 = Class.new
 
             mash do
               attr_reader :id
@@ -215,8 +215,8 @@ RSpec.describe SteelWheel::Operation do
             end
 
             branch :left do
-              controller :authorize
-              controller :sync
+              component :authorize
+              component :sync
               authorize do
                 include ActiveModel::Validations
                 def o
@@ -236,7 +236,7 @@ RSpec.describe SteelWheel::Operation do
             end
 
             branch :right do
-              controller :store
+              component :store
 
               store do
                 def e
@@ -270,9 +270,9 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
-            controller :formatter
-            controller :final
-            controller :mash, base_class: Z1 = Class.new
+            component :formatter
+            component :final
+            component :mash, base_class: Z1 = Class.new
 
             mash do
               attr_reader :id
@@ -302,8 +302,8 @@ RSpec.describe SteelWheel::Operation do
             end
 
             branch :left do
-              controller :authorize
-              controller :sync
+              component :authorize
+              component :sync
               authorize do
                 include ActiveModel::Validations
                 def o
@@ -323,7 +323,7 @@ RSpec.describe SteelWheel::Operation do
             end
 
             branch :right do
-              controller :store
+              component :store
 
               store do
                 def e
