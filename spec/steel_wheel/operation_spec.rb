@@ -22,6 +22,7 @@ RSpec.describe SteelWheel::Operation do
           def initialize(opts)
             @id = opts[:id]
           end
+
           def call
             { id: id, success: true }
           end
@@ -191,6 +192,7 @@ RSpec.describe SteelWheel::Operation do
               def initialize(opts)
                 @id = opts[:id]
               end
+
               def a
                 'a'
               end
@@ -277,6 +279,7 @@ RSpec.describe SteelWheel::Operation do
               def initialize(opts)
                 @id = opts[:id]
               end
+
               def a
                 'a'
               end

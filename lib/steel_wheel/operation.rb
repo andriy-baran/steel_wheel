@@ -8,7 +8,7 @@ module SteelWheel
       klass = Class.new
       klass.send(:define_method, :call, &block)
       controller :"dispatcher#{controllers.size}", base_class: klass
-      public_send(:"dispatcher#{controllers.size}"){}
+      public_send(:"dispatcher#{controllers.size}") {}
     end
 
     def self.branch(branch_name, &block)

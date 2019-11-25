@@ -68,7 +68,7 @@ module SteelWheel
           end
         end
 
-        def respond_to_missing?(method_name, include_private = false)
+        def respond_to_missing?(_method_name, _include_private = false)
           !public_send(__sw_predecessor__).nil?
         end
       end
@@ -95,13 +95,13 @@ module SteelWheel
       klass.new(input)
     end
 
-    def self.__sw_decorate__(cascade, base_class, i)
+    def self.__sw_decorate__(cascade, base_class, _i)
       if cascade.first_step?
         cascade.current_object = __sw_wrap_input__(base_class)
       else
         cascade.wrapped_object = __sw_wrap__(cascade.current_object,
-                                     wrapper_object: base_class.new,
-                                     accessor: cascade.previous_controller)
+                                             wrapper_object: base_class.new,
+                                             accessor: cascade.previous_controller)
         cascade.current_object = cascade.wrapped_object
       end
     end
@@ -115,6 +115,7 @@ module SteelWheel
     def self.__sw_cascade_decorating__(cascade)
       lambda do |(controller, base_class), i|
         break if __sw_invalidate_state__(cascade.wrapped_object)
+
         __sw_handle_step__(cascade, base_class, controller, i)
       end
     end

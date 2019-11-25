@@ -72,7 +72,7 @@ RSpec.describe SteelWheel::Params do
             sections: [
               {
                 updated_at: '2018-07-13',
-                post: { author: 'Bob'}
+                post: { author: 'Bob' }
               }
             ],
             post: {
@@ -80,11 +80,11 @@ RSpec.describe SteelWheel::Params do
               sections: [
                 {
                   updated_at: '2019-07-13',
-                  meta: {copies: []}
+                  meta: { copies: [] }
                 },
                 {
                   updated_at: '2019-08-13',
-                  meta: {copies: []}
+                  meta: { copies: [] }
                 }
               ]
             }
@@ -99,7 +99,7 @@ RSpec.describe SteelWheel::Params do
                 content: '',
                 id: nil,
                 updated_at: Date.parse('2018-07-13'),
-                post: { id: nil, author: 'Bob'}
+                post: { id: nil, author: 'Bob' }
               }
             ],
             post: {
@@ -110,13 +110,13 @@ RSpec.describe SteelWheel::Params do
                   content: '',
                   id: nil,
                   updated_at: Date.parse('2019-07-13'),
-                  meta: {copies: []}
+                  meta: { copies: [] }
                 },
                 {
                   content: '',
                   id: nil,
                   updated_at: Date.parse('2019-08-13'),
-                  meta: {copies: []}
+                  meta: { copies: [] }
                 }
               ]
             }
@@ -133,19 +133,18 @@ RSpec.describe SteelWheel::Params do
       vars do
         attributes do
           { id: 2, quantity: 5,
-            sections: [{updated_at: '2018-07-13', post: { author: 'Bob'}}],
-            post: { author: 'Bob', sections: [{updated_at: '2019-07-13'}] }
-          }
+            sections: [{ updated_at: '2018-07-13', post: { author: 'Bob' } }],
+            post: { author: 'Bob', sections: [{ updated_at: '2019-07-13' }] } }
         end
       end
 
       it 'returns hash with correct values' do
         params_obj.valid?
         expect(OpenStruct.new(params_obj.errors.messages)).to have_attributes(
-          :"sections/0/id"=>an_instance_of(Array),
-          :"sections/0/post/id"=>an_instance_of(Array),
-          :"post/id"=>an_instance_of(Array),
-          :"post/sections/0/id"=>an_instance_of(Array)
+          "sections/0/id": an_instance_of(Array),
+          "sections/0/post/id": an_instance_of(Array),
+          "post/id": an_instance_of(Array),
+          "post/sections/0/id": an_instance_of(Array)
         )
       end
     end
@@ -182,17 +181,17 @@ RSpec.describe SteelWheel::Params do
         end
       end
       attributes do
-        { quantity: 3, posts: [{content: nil}, {content: 'story'}], user: {role: 'man'}}
+        { quantity: 3, posts: [{ content: nil }, { content: 'story' }], user: { role: 'man' } }
       end
       params_obj { params_class.new(attributes) }
     end
 
     it 'returns hash with correct values' do
-      expect(params_obj.to_hash).to eq({
-        posts: [{content: ''}, {content: 'story'}],
+      expect(params_obj.to_hash).to eq(
+        posts: [{ content: '' }, { content: 'story' }],
         quantity: 3,
-        user: {:role=>'man'}
-      })
+        user: { role: 'man' }
+      )
     end
   end
 end

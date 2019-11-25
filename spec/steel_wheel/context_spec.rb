@@ -1,5 +1,5 @@
 RSpec.describe SteelWheel::Context do
-  DATA = { 'base/1' => true  }
+  DATA = { 'base/1' => true }.freeze
 
   vars do
     context_class do

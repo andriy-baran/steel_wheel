@@ -10,7 +10,7 @@ module SteelWheel
       end
       mod.module_eval do
         def self.included(klass)
-          klass.class_eval %Q{
+          klass.class_eval %{
             class << klass
               alias_method :_new, :new
 
