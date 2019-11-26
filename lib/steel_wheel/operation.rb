@@ -7,8 +7,8 @@ module SteelWheel
     def self.dispatch(&block)
       klass = Class.new
       klass.send(:define_method, :call, &block)
-      component :"dispatcher#{components.size}", base_class: klass
-      public_send(:"dispatcher#{components.size}") {}
+      controller :"dispatcher#{controllers.size}", base_class: klass
+      public_send(:"dispatcher#{controllers.size}") {}
     end
 
     def self.branch(branch_name, &block)
