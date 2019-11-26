@@ -1,18 +1,12 @@
 module SteelWheel
   class Operation < SteelWheel::Rail
-    def self.branches
-      @branches ||= {}
-    end
+    include SteelWheel::Composite[:branch]
 
     def self.dispatch(&block)
       klass = Class.new
       klass.send(:define_method, :call, &block)
       controller :"dispatcher#{controllers.size}", base_class: klass
       public_send(:"dispatcher#{controllers.size}") {}
-    end
-
-    def self.branch(branch_name, &block)
-      branches[branch_name] = Class.new(SteelWheel::Operation, &block)
     end
 
     def self.__sw_handle_step__(cascade, base_class, component, i)
