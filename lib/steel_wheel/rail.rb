@@ -1,6 +1,6 @@
 module SteelWheel
   class Rail
-    include SteelWheel::Composite
+    include SteelWheel::Composite[:component]
 
     class << self
       attr_accessor :input, :output

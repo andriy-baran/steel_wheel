@@ -45,6 +45,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'dry-struct'
   spec.add_dependency 'dry-types', '~> 0.13.4'
   spec.add_dependency 'memery'
+  spec.add_dependency 'dry-inflector'
 
   spec.add_development_dependency 'bundler', '~> 1.16'
   spec.add_development_dependency 'pry'
