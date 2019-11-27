@@ -2,6 +2,20 @@ module SteelWheel
   class Rail
     include SteelWheel::Composite[:controller]
 
+    module MethodMissingDecoration
+      def method_missing(name, *attrs, &block)
+        if public_send(__sw_predecessor__)
+          public_send(__sw_predecessor__).public_send(name, *attrs, &block)
+        else
+          super
+        end
+      end
+
+      def respond_to_missing?(_method_name, _include_private = false)
+        !public_send(__sw_predecessor__).nil?
+      end
+    end
+
     class << self
       attr_accessor :input, :output
     end
@@ -22,28 +36,12 @@ module SteelWheel
       self
     end
 
-    def self.__sw_decoration_module__
-      Module.new do
-        def method_missing(name, *attrs, &block)
-          if public_send(__sw_predecessor__)
-            public_send(__sw_predecessor__).public_send(name, *attrs, &block)
-          else
-            super
-          end
-        end
-
-        def respond_to_missing?(_method_name, _include_private = false)
-          !public_send(__sw_predecessor__).nil?
-        end
-      end
-    end
-
     def self.__sw_wrap__(current_object, wrapper_object:, accessor:)
       wrapper_object.singleton_class.class_eval do
         attr_accessor :__sw_predecessor__
       end
       wrapper_object.__sw_predecessor__ = accessor
-      wrapper_object.extend(__sw_decoration_module__)
+      wrapper_object.extend(MethodMissingDecoration)
       wrapper_object.singleton_class.class_eval do
         attr_accessor wrapper_object.__sw_predecessor__
       end
