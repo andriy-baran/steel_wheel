@@ -8,6 +8,10 @@ module SteelWheel
           def included(receiver)
             receiver.extend self
           end
+
+          def extended(receiver)
+            receiver.__sw_composites__[__sw_components_name__] = __sw_component_name__
+          end
         end
       end
       const_set(ActiveSupport::Inflector.classify(component_name), mod)
@@ -17,16 +21,22 @@ module SteelWheel
         def #{mod.__sw_components_name__}
           @#{mod.__sw_components_name__} ||= {}
         end
+
+        def __sw_composites__
+          @@__sw_composites__ ||= {}
+        end
       METHOD
       mod.module_eval do
         define_method(:inherited) do |subclass|
-          public_send("#{mod.__sw_components_name__}").each_key do |component|
-            klass = public_send(:"#{component}_class")
-            subclass.public_send(:"#{component}_class=", klass)
+          included_modules
+            .select{|m| m.to_s.match(/SteelWheel::Composite/)  }
+            .each{|composite| subclass.__sw_composites__[composite.__sw_components_name__] = composite.__sw_component_name__.to_s}
+          subclass.__sw_composites__.each do |(components_name, component_name)|
+            public_send("#{components_name}").each do |component, klass|
+              store_method = :"__sw_store_#{component_name}_class__"
+              subclass.public_send(store_method, component, klass)
+            end
           end
-          # included_modules
-          #   .select{|m| m.to_s.match(/SteelWheel::Composite/) && !subclass.included_modules.include?(m) }
-          #   .each{|composite| subclass.send(:include, composite)}
         end
 
         define_method(:"__sw_store_#{mod.__sw_component_name__}_class__") do |method_name, klass|
