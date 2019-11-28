@@ -40,7 +40,7 @@ module SteelWheel
         end
 
         define_method(:"__sw_store_#{mod.__sw_component_name__}_class__") do |method_name, klass|
-          public_send(:"#{method_name}_class=", klass)
+          public_send(:"#{method_name}_#{mod.__sw_component_name__}_class=", klass)
           public_send(:"#{mod.__sw_components_name__}")[method_name] = klass
         end
 
@@ -52,12 +52,12 @@ module SteelWheel
           -> { raise(ArgumentError, 'please provide a block or class') }
         end
 
-        def __sw_add_component_class_accessors__(method_name)
-          singleton_class.class_eval { attr_accessor :"#{method_name}_class" }
+        def __sw_add_component_class_accessors__(method_name, component_name)
+          singleton_class.class_eval { attr_accessor :"#{method_name}_#{component_name}_class" }
         end
 
         define_method(:"__sw_activate_#{mod.__sw_component_name__}_component__") do |method_name, base_class, klass, &block|
-          component_class = public_send(:"#{method_name}_class")
+          component_class = public_send(:"#{method_name}_#{mod.__sw_component_name__}_class")
           store_method = :"__sw_store_#{mod.__sw_component_name__}_class__"
           if component_class.present? # inherited
             __sw_subclass_error__(base_class).call unless component_class <= base_class
@@ -77,7 +77,7 @@ module SteelWheel
         end
 
         define_method(mod.__sw_component_name__.to_sym) do |method_name, base_class: Class.new|
-          __sw_add_component_class_accessors__(method_name)
+          __sw_add_component_class_accessors__(method_name, mod.__sw_component_name__)
           singleton_class.send(:define_method, method_name) do |klass = nil, &block|
             public_send(:"__sw_activate_#{mod.__sw_component_name__}_component__", method_name, base_class, klass, &block)
           end

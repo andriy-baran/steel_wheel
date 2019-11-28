@@ -31,8 +31,8 @@ RSpec.describe SteelWheel::Composite do
         end
 
         def self.test_instance(json)
-          parser = parser_class.new
-          formatter = formatter_class.new(parser.parse(json))
+          parser = parser_controller_class.new
+          formatter = formatter_controller_class.new(parser.parse(json))
           new(formatter)
         end
 
@@ -45,8 +45,8 @@ RSpec.describe SteelWheel::Composite do
   end
 
   it { expect(operation_class).to respond_to(:controller) }
-  it { expect(operation_class).to respond_to(:parser_class) }
-  it { expect(operation_class).to respond_to(:formatter_class) }
+  it { expect(operation_class).to respond_to(:parser_controller_class) }
+  it { expect(operation_class).to respond_to(:formatter_controller_class) }
 
   describe 'inheritance' do
     vars do
@@ -61,8 +61,8 @@ RSpec.describe SteelWheel::Composite do
       end
     end
 
-    it { expect(child_operation_class).to respond_to(:parser_class) }
-    it { expect(child_operation_class).to respond_to(:formatter_class) }
+    it { expect(child_operation_class).to respond_to(:parser_controller_class) }
+    it { expect(child_operation_class).to respond_to(:formatter_controller_class) }
 
     it 'overrides components' do
       operation = child_operation_class.test_instance(value.to_json)

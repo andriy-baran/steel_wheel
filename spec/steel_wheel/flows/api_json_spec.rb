@@ -57,16 +57,16 @@ RSpec.describe SteelWheel::Operation do
     action { action_class.new(context_object) }
   end
 
-  it { expect(operation_class).to respond_to(:params_class) }
-  it { expect(operation_class).to respond_to(:context_class) }
-  it { expect(operation_class).to respond_to(:action_class) }
+  it { expect(operation_class).to respond_to(:params_controller_class) }
+  it { expect(operation_class).to respond_to(:context_controller_class) }
+  it { expect(operation_class).to respond_to(:action_controller_class) }
 
   describe '.params' do
     context 'when class provided' do
       it 'saves it instance variable' do
         params_class = Class.new(SteelWheel::Params)
         operation_class.params(params_class)
-        expect(operation_class.params_class).to eq params_class
+        expect(operation_class.params_controller_class).to eq params_class
       end
     end
 
@@ -84,8 +84,8 @@ RSpec.describe SteelWheel::Operation do
         operation_class.params do
           attribute :quantity, integer.default(1)
         end
-        expect(operation_class.params_class.superclass).to eq SteelWheel::Params
-        expect(operation_class.params_class.new.quantity).to eq 1
+        expect(operation_class.params_controller_class.superclass).to eq SteelWheel::Params
+        expect(operation_class.params_controller_class.new.quantity).to eq 1
       end
     end
   end
@@ -95,7 +95,7 @@ RSpec.describe SteelWheel::Operation do
       it 'saves it instance variable' do
         context_class = Class.new(SteelWheel::Context)
         operation_class.context(context_class)
-        expect(operation_class.context_class).to eq context_class
+        expect(operation_class.context_controller_class).to eq context_class
       end
     end
 
@@ -115,8 +115,8 @@ RSpec.describe SteelWheel::Operation do
             1
           end
         end
-        expect(operation_class.context_class.superclass).to eq SteelWheel::Context
-        expect(operation_class.context_class.new.quantity).to eq 1
+        expect(operation_class.context_controller_class.superclass).to eq SteelWheel::Context
+        expect(operation_class.context_controller_class.new.quantity).to eq 1
       end
     end
   end
@@ -126,7 +126,7 @@ RSpec.describe SteelWheel::Operation do
       it 'saves it instance variable' do
         action_class = Class.new(SteelWheel::Action)
         operation_class.action(action_class)
-        expect(operation_class.action_class).to eq action_class
+        expect(operation_class.action_controller_class).to eq action_class
       end
     end
 
@@ -146,8 +146,8 @@ RSpec.describe SteelWheel::Operation do
             1
           end
         end
-        expect(operation_class.action_class.superclass).to eq SteelWheel::Action
-        expect(operation_class.action_class.new.quantity).to eq 1
+        expect(operation_class.action_controller_class.superclass).to eq SteelWheel::Action
+        expect(operation_class.action_controller_class.new.quantity).to eq 1
       end
     end
   end
