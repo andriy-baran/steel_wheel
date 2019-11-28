@@ -1,5 +1,5 @@
 module SteelWheel
-  class Context < OpenStruct
+  class Context
     include Memery
     include ActiveModel::Validations
 

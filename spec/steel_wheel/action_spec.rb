@@ -3,20 +3,17 @@ RSpec.describe SteelWheel::Action do
     action_class do
       Class.new(SteelWheel::Action) do
         def upcased_title
-          title.upcase
+          'new action'.upcase
         end
       end
     end
     title { 'new action' }
-    context_object { OpenStruct.new(title: title) }
-    action { action_class.new(context_object) }
+    action { action_class.new }
   end
 
-  it { expect(action).to respond_to(:title) }
   it { expect(action).to respond_to(:upcased_title) }
 
   it 'has access to data passed in context object' do
-    expect(action.title).to eq title
     expect(action.upcased_title).to eq title.upcase
   end
 

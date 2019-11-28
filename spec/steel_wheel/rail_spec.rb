@@ -37,14 +37,14 @@ RSpec.describe SteelWheel::Rail do
               end
             end
             def call
-              "#{result.a}#{result.o}#{result.u}#{result.e}y#{result.i}#{result.id}"
+              "#{given.a}#{given.o}#{given.u}#{given.e}y#{given.i}#{given.id}"
             end
           end
         end
         value { { id: 3 } }
       end
 
-      it 'result has access to all nested methods' do
+      it 'given has access to all nested methods' do
         operation = operation_class.from(value).to(:json).prepare
         expect(operation.call).to eq('aoueyi3')
       end
@@ -90,16 +90,16 @@ RSpec.describe SteelWheel::Rail do
               end
             end
             def call
-              "#{result.a}#{result.o}#{result.u}#{result.e}y#{result.i}#{result.id}"
+              "#{given.a}#{given.o}#{given.u}#{given.e}y#{given.i}#{given.id}"
             end
           end
         end
         value { { id: 3 } }
       end
 
-      it 'result has errors' do
+      it 'given has errors' do
         operation = operation_class.from(value).to(:json).prepare
-        expect(operation.result.errors).to_not be_empty
+        expect(operation.given.errors).to_not be_empty
       end
     end
   end

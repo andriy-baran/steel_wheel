@@ -1,5 +1,7 @@
 module SteelWheel
-  class Action < SimpleDelegator
-    alias given __getobj__
+  class Action
+    def call
+      # NOOP
+    end
   end
 end

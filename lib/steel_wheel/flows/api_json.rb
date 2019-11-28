@@ -3,10 +3,6 @@ module SteelWheel
     module ApiJson
       class Result < OpenStruct; end
 
-      module NOOP
-        def call(*); end
-      end
-
       module ClassMethods
         def inherited(subclass)
           subclass.errors_format(&errors_format)
@@ -17,48 +13,51 @@ module SteelWheel
           block_given? ? @errors_format = block : @errors_format ||= ->(text) { { error: 'error', message: text } }
         end
 
-        def from_params(params, &block)
-          raise "#{name} has no params defined. Please use params {} or params <class name> to define it." if params_class.nil?
-          raise "#{name} has no context defined. Please use context {} or context <class name> to define it." if context_class.nil?
-          raise "#{name} has no action defined. Please use action {} or action <class name> to define it." if action_class.nil?
+        def __sw_cascade_decorating__(cascade, &block)
+          controllers.each do |controller, base_class|
+            __sw_component_inactive_error__(controller).call if base_class.nil?
+            block.call(cascade.current_object) if cascade.previous_controller == :context && block_given?
+            cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
 
-          create_params = ->(params) { params_class.new(params) }
-          create_context = ->(attributes) { context_class.new(attributes) }
-          create_action = ->(context) { action_class.new(context) }
-          create_op = ->(action) { new(action) }
-          create_noop = ->(result) { new(nil, result).tap { |op| op.singleton_class.prepend(NOOP) } }
-          create_result = ->(status, text) { Result.new(content_type: 'application/json', status: status, text: text) }.curry
-          error_json_result = ->(text, status) { create_result.call(status).call(errors_format.call(text).to_json) }
-          create_noop_error_json = lambda { |text, status|
-            create_noop.call(error_json_result.call(text, status))
-          }
-          flow = lambda { |success, error|
-            params_object = create_params.call(params)
-            params_object.invalid? && (return error.call(params_object.errors.full_messages.join("\n"), :bad_request))
-            context = create_context.call(params_object.attributes)
-            block.call(context) if block_given?
-            context.invalid? && (return error.call(context.errors.full_messages_for(context.error_key).join("\n"), context.error_key))
-            success.call(create_action.call(context))
-          }
-          flow.call(create_op, create_noop_error_json)
+            __sw_handle_step__(cascade, base_class, controller)
+          end
         end
-      end
 
-      module Initializer
-        attr_reader :action, :result
-        def initialize(action, result = Result.new(text: {}.to_json, content_type: 'application/json', status: :ok))
-          @action = action
-          @result = result
+        def prepare(cascade = SteelWheel::CascadingState.new, &block)
+          __sw_cascade_decorating__(cascade, &block)
+          new(cascade.current_object).tap do |op|
+            cascade.error_track? ? op.on_failure(cascade.previous_controller) : op.on_success
+          end
         end
       end
 
       module InstanceMethods
-        # Nothing here for now
+        def initialize(given)
+          @given = given
+          @result = Result.new(text: {}.to_json, content_type: 'application/json', status: :ok)
+        end
+
+        def on_failure(failed_step)
+          if failed_step == :params
+            result.text = self.class.errors_format.call(given.errors.full_messages.join("\n")).to_json
+            result.status = :bad_request
+          elsif failed_step == :context
+            errors = given.errors.full_messages_for(given.error_key).join("\n")
+            result.text = self.class.errors_format.call(errors).to_json
+            result.status = given.error_key
+          else
+            # NOOP
+          end
+        end
+
+        def on_success
+          # NOOP
+        end
       end
 
       def self.included(receiver)
         receiver.extend         ClassMethods
-        receiver.send :include, Initializer
+        receiver.send :include, InstanceMethods
         receiver.class_eval do
           controller :params, base_class: SteelWheel::Params
           controller :context, base_class: SteelWheel::Context

@@ -14,7 +14,7 @@ RSpec.describe SteelWheel::Operation do
 
             mash do
               attr_reader :id
-              def initialize(opts)
+              def initialize(opts = {})
                 @id = opts[:id]
               end
 
@@ -71,22 +71,22 @@ RSpec.describe SteelWheel::Operation do
             end
 
             def call
-              "#{result.a}#{result.o}#{result.u}#{result.e}y#{result.i}#{result.id}"
+              "#{given.a}#{given.o}#{given.u}#{given.e}y#{given.i}#{given.id}"
             end
           end
         end
         value { { id: 3 } }
       end
 
-      it 'result has no errors' do
+      it 'given has no errors' do
         operation = operation_class.from(value).to(:json).prepare
-        expect(operation.result.a).to eq 'a'
-        expect(operation.result.o).to eq 'o'
-        expect(operation.result.u).to eq 'u'
-        expect(operation.result.i).to eq 'i'
-        expect(operation.result.y).to eq 'y'
+        expect(operation.given.a).to eq 'a'
+        expect(operation.given.o).to eq 'o'
+        expect(operation.given.u).to eq 'u'
+        expect(operation.given.i).to eq 'i'
+        expect(operation.given.y).to eq 'y'
         expect do
-          operation.result.e
+          operation.given.e
         end.to raise_error(NoMethodError)
       end
     end
@@ -160,28 +160,28 @@ RSpec.describe SteelWheel::Operation do
             end
 
             def call
-              "#{result.a}#{result.o}#{result.u}#{result.e}y#{result.i}#{result.id}"
+              "#{given.a}#{given.o}#{given.u}#{given.e}y#{given.i}#{given.id}"
             end
           end
         end
         value { { id: 3 } }
       end
 
-      it 'result has errors' do
+      it 'given has errors' do
         operation = operation_class.from(value).to(:json).prepare
-        expect(operation.result.a).to eq 'a'
-        expect(operation.result.o).to eq 'o'
+        expect(operation.given.a).to eq 'a'
+        expect(operation.given.o).to eq 'o'
         expect do
-          operation.result.u
+          operation.given.u
         end.to raise_error(NoMethodError)
         expect do
-          operation.result.i
+          operation.given.i
         end.to raise_error(NoMethodError)
         expect do
-          operation.result.y
+          operation.given.y
         end.to raise_error(NoMethodError)
         expect do
-          operation.result.e
+          operation.given.e
         end.to raise_error(NoMethodError)
       end
     end

@@ -20,9 +20,10 @@ module SteelWheel
       attr_accessor :input, :output
     end
 
-    attr_reader :result
+    attr_reader :result, :given
 
-    def initialize(result)
+    def initialize(given)
+      @given = given
       @result = result
     end
 
@@ -57,7 +58,7 @@ module SteelWheel
       klass.new(input)
     end
 
-    def self.__sw_decorate__(cascade, base_class, _i)
+    def self.__sw_decorate__(cascade, base_class)
       if cascade.first_step?
         cascade.current_object = __sw_wrap_input__(base_class)
       else
@@ -68,36 +69,33 @@ module SteelWheel
       end
     end
 
-    def self.__sw_handle_step__(cascade, base_class, controller, i)
-      __sw_decorate__(cascade, base_class, i)
+    def self.__sw_handle_step__(cascade, base_class, controller)
+      __sw_decorate__(cascade, base_class)
       cascade.previous_controller = controller
       cascade.inc_step
     end
 
     def self.__sw_cascade_decorating__(cascade)
-      lambda do |(controller, base_class), i|
-        break if __sw_invalidate_state__(cascade.wrapped_object)
+      controllers.each do |controller, base_class|
+        __sw_component_inactive_error__(controller).call if base_class.nil?
+        cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
 
-        __sw_handle_step__(cascade, base_class, controller, i)
+        __sw_handle_step__(cascade, base_class, controller)
       end
     end
 
     def self.prepare(cascade = SteelWheel::CascadingState.new)
-      controllers.each.with_index(&__sw_cascade_decorating__(cascade))
-      new(cascade.current_object)
+      __sw_cascade_decorating__(cascade)
+      new(cascade.current_object).tap do |op|
+        cascade.error_track? ? op.on_failure(cascade.previous_controller) : op.on_success
+      end
     end
 
-    def success?
-      result.respond_to?(:errors) &&
-        result.errors &&
-        result.errors.any?
+    def on_failure(failed_step = nil)
+      # NOOP
     end
 
-    def failure?
-      !success?
-    end
-
-    def call
+    def on_success
       # NOOP
     end
   end

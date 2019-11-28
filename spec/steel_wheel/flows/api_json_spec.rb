@@ -147,77 +147,48 @@ RSpec.describe SteelWheel::Operation do
           end
         end
         expect(operation_class.action_class.superclass).to eq SteelWheel::Action
-        expect(operation_class.action_class.new(Object.new).quantity).to eq 1
+        expect(operation_class.action_class.new.quantity).to eq 1
       end
     end
   end
 
-  describe '.from_params' do
-    context 'when no params class provided' do
-      it 'raises error' do
-        expect do
-          operation_class.from_params({})
-        end.to raise_error(/has no params defined. Please use params {} or params <class name> to define it/)
+  context 'when params, context, action provided' do
+    before do
+      operation_class.params(params_class)
+      operation_class.context(context_class)
+      operation_class.action(action_class)
+    end
+
+    it 'returns an instance of self' do
+      expect(operation_class.from({id: 2}).to(:json).prepare).to be_an_instance_of operation_class
+    end
+
+    context 'when params object is invalid' do
+      it 'returns an instance of NoOperation' do
+        operation = operation_class.from({}).to(:json).prepare
+        expect(operation).to be_a SteelWheel::Operation
       end
     end
 
-    context 'when params class provided and no context class provided' do
-      it 'raises error' do
-        operation_class.params(params_class)
-        expect do
-          operation_class.from_params({})
-        end.to raise_error(/has no context defined. Please use context {} or context <class name> to define it/)
-      end
-    end
-
-    context 'when params class provided and context class provided and no action class provided' do
-      it 'raises error' do
-        operation_class.params(params_class)
-        operation_class.context(context_class)
-        expect do
-          operation_class.from_params({})
-        end.to raise_error(/has no action defined. Please use action {} or action <class name> to define it/)
-      end
-    end
-
-    context 'when params, context, action provided' do
-      before do
-        operation_class.params(params_class)
-        operation_class.context(context_class)
-        operation_class.action(action_class)
-      end
-
-      it 'returns an instance of self' do
-        expect(operation_class.from_params(id: 1)).to be_an_instance_of operation_class
-      end
-
-      context 'when params object is invalid' do
-        it 'returns an instance of NoOperation' do
-          operation = operation_class.from_params({})
-          expect(operation).to be_a SteelWheel::Operation
-        end
-      end
-
-      context 'when context object is invalid' do
-        vars do
-          context_class do
-            Class.new(SteelWheel::Context) do
-              def record; end
-              validate { errors.add(:base, 'Context error') if record.nil? }
-            end
+    context 'when context object is invalid' do
+      vars do
+        context_class do
+          Class.new(SteelWheel::Context) do
+            def record; end
+            validate { errors.add(:base, 'Context error') if record.nil? }
           end
         end
+      end
 
-        it 'returns an instance of NoOperation' do
-          operation = operation_class.from_params(id: 1)
-          expect(operation).to be_a SteelWheel::Operation
-        end
+      it 'returns an instance of NoOperation' do
+        operation = operation_class.from({id: 1}).to(:json).prepare
+        expect(operation).to be_a SteelWheel::Operation
       end
     end
   end
 
   describe '.error_format' do
-    before do
+    before(:each) do
       operation_class.params(params_class)
       operation_class.context(context_class)
       operation_class.action(action_class)
@@ -228,7 +199,7 @@ RSpec.describe SteelWheel::Operation do
 
     context 'when base class' do
       it 'has customized errors' do
-        op = operation_class.from_params(id: nil)
+        op = operation_class.from({id: nil}).to(:json).prepare
         op.call
         expect(op.result.to_h[:text]).to eq({ errors: "Id can't be blank" }.to_json)
       end
@@ -237,18 +208,11 @@ RSpec.describe SteelWheel::Operation do
     context 'when child class' do
       it 'has customized errors' do
         child_class = Class.new(operation_class)
-        op = child_class.from_params(id: nil)
+        op = child_class.from({id: nil}).to(:json).prepare
         op.call
         expect(op.result.to_h[:text]).to eq({ errors: "Id can't be blank" }.to_json)
       end
     end
-  end
-
-  describe '#call' do
-    it {
-      operation = operation_class.new(action)
-      expect(operation).to respond_to(:call)
-    }
   end
 
   describe '#result' do
@@ -260,7 +224,7 @@ RSpec.describe SteelWheel::Operation do
 
     context 'when params object is invalid' do
       it 'returns correct result' do
-        operation = operation_class.from_params({})
+        operation = operation_class.from({}).to(:json).prepare
         expect(operation.result.to_h).to eq invalid_params_result
       end
     end
@@ -276,24 +240,26 @@ RSpec.describe SteelWheel::Operation do
       end
 
       it 'returns correct result' do
-        operation = operation_class.from_params(id: 1)
+        operation = operation_class.from({id: 1}).to(:json).prepare
         expect(operation.result.to_h).to eq invalid_context_result
       end
     end
 
     context 'when everything is ok' do
       it 'returns correct result' do
-        operation = operation_class.from_params(id: 1)
+        operation = operation_class.from({id: 1}).to(:json).prepare
         expect(operation.result.to_h).to eq ok_result
       end
     end
 
     context 'when context is extended' do
       it 'returns correct result' do
-        operation = operation_class.from_params(id: 1) do |ctx|
+        context_class.class_eval{ attr_accessor :new_value }
+        operation_class.context(context_class)
+        operation = operation_class.from({id: 1}).to(:json).prepare do |ctx|
           ctx.new_value = 15
         end
-        expect(operation.action.new_value).to eq 15
+        expect(operation.given.new_value).to eq 15
       end
     end
   end

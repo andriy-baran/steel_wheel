@@ -4,6 +4,7 @@ module SteelWheel
 
     def initialize
       @step = 0
+      @error_track = false
     end
 
     def inc_step
@@ -12,6 +13,14 @@ module SteelWheel
 
     def first_step?
       @step.zero?
+    end
+
+    def failure
+      @error_track = true
+    end
+
+    def error_track?
+      @error_track
     end
   end
 end

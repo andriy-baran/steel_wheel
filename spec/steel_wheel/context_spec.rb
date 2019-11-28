@@ -4,6 +4,13 @@ RSpec.describe SteelWheel::Context do
   vars do
     context_class do
       Class.new(SteelWheel::Context) do
+        def initialize(opts)
+          opts.each do |(key, value)|
+            self.class.class_eval{attr_accessor key}
+            instance_variable_set(:"@#{key}", value)
+          end
+        end
+
         def data
           DATA[id]
         end
@@ -52,10 +59,6 @@ RSpec.describe SteelWheel::Context do
     expect(SteelWheel::Context.ancestors).to include(ActiveModel::Validations)
   end
 
-  it 'is subclass of OpenStruct' do
-    expect(SteelWheel::Context.superclass).to eq OpenStruct
-  end
-
   it 'memoize methods' do
     old_id = context.random_object_id
     expect(context.random_object_id).to eq old_id
@@ -71,7 +74,7 @@ RSpec.describe SteelWheel::Context do
     end
 
     it 'skips :not_found, :forbidden, :unprocessable_entity in full error messages' do
-      ctx = context_class.new({}).tap(&:valid?)
+      ctx = context_class.new.tap(&:valid?)
       expect(ctx.errors.to_a).to eq ['Error Message']
       expect(ctx.error_key).to eq :forbidden
     end
