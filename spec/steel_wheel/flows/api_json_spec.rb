@@ -57,7 +57,7 @@ RSpec.describe SteelWheel::Operation do
     action { action_class.new(context_object) }
   end
 
-  it { expect(operation_class).to respond_to(:params_controller_class) }
+  it { expect(operation_class).to respond_to(:params_input_class) }
   it { expect(operation_class).to respond_to(:context_controller_class) }
   it { expect(operation_class).to respond_to(:action_controller_class) }
 
@@ -66,7 +66,7 @@ RSpec.describe SteelWheel::Operation do
       it 'saves it instance variable' do
         params_class = Class.new(SteelWheel::Params)
         operation_class.params(params_class)
-        expect(operation_class.params_controller_class).to eq params_class
+        expect(operation_class.params_input_class).to eq params_class
       end
     end
 
@@ -84,8 +84,8 @@ RSpec.describe SteelWheel::Operation do
         operation_class.params do
           attribute :quantity, integer.default(1)
         end
-        expect(operation_class.params_controller_class.superclass).to eq SteelWheel::Params
-        expect(operation_class.params_controller_class.new.quantity).to eq 1
+        expect(operation_class.params_input_class.superclass).to eq SteelWheel::Params
+        expect(operation_class.params_input_class.new.quantity).to eq 1
       end
     end
   end
@@ -160,12 +160,12 @@ RSpec.describe SteelWheel::Operation do
     end
 
     it 'returns an instance of self' do
-      expect(operation_class.from({id: 2}).to(:json).prepare).to be_an_instance_of operation_class
+      expect(operation_class.prepare).to be_an_instance_of operation_class
     end
 
     context 'when params object is invalid' do
       it 'returns an instance of NoOperation' do
-        operation = operation_class.from({}).to(:json).prepare
+        operation = operation_class.accept({}).prepare
         expect(operation).to be_a SteelWheel::Operation
       end
     end
@@ -181,7 +181,7 @@ RSpec.describe SteelWheel::Operation do
       end
 
       it 'returns an instance of NoOperation' do
-        operation = operation_class.from({id: 1}).to(:json).prepare
+        operation = operation_class.accept({id: 1}).prepare
         expect(operation).to be_a SteelWheel::Operation
       end
     end
@@ -199,7 +199,7 @@ RSpec.describe SteelWheel::Operation do
 
     context 'when base class' do
       it 'has customized errors' do
-        op = operation_class.from({id: nil}).to(:json).prepare
+        op = operation_class.accept({id: nil}).prepare
         op.call
         expect(op.result.to_h[:text]).to eq({ errors: "Id can't be blank" }.to_json)
       end
@@ -208,8 +208,7 @@ RSpec.describe SteelWheel::Operation do
     context 'when child class' do
       it 'has customized errors' do
         child_class = Class.new(operation_class)
-        op = child_class.from({id: nil}).to(:json).prepare
-        op.call
+        op = child_class.accept({id: nil}).prepare
         expect(op.result.to_h[:text]).to eq({ errors: "Id can't be blank" }.to_json)
       end
     end
@@ -224,7 +223,7 @@ RSpec.describe SteelWheel::Operation do
 
     context 'when params object is invalid' do
       it 'returns correct result' do
-        operation = operation_class.from({}).to(:json).prepare
+        operation = operation_class.accept({}).prepare
         expect(operation.result.to_h).to eq invalid_params_result
       end
     end
@@ -240,14 +239,14 @@ RSpec.describe SteelWheel::Operation do
       end
 
       it 'returns correct result' do
-        operation = operation_class.from({id: 1}).to(:json).prepare
+        operation = operation_class.accept({id: 1}).prepare
         expect(operation.result.to_h).to eq invalid_context_result
       end
     end
 
     context 'when everything is ok' do
       it 'returns correct result' do
-        operation = operation_class.from({id: 1}).to(:json).prepare
+        operation = operation_class.accept({id: 1}).prepare
         expect(operation.result.to_h).to eq ok_result
       end
     end
@@ -256,7 +255,7 @@ RSpec.describe SteelWheel::Operation do
       it 'returns correct result' do
         context_class.class_eval{ attr_accessor :new_value }
         operation_class.context(context_class)
-        operation = operation_class.from({id: 1}).to(:json).prepare do |ctx|
+        operation = operation_class.accept({id: 1}).prepare do |ctx|
           ctx.new_value = 15
         end
         expect(operation.given.new_value).to eq 15

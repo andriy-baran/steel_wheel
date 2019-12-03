@@ -6,7 +6,9 @@ RSpec.describe SteelWheel::Rail do
       vars do
         operation_class do
           Class.new(SteelWheel::Rail) do
-            controller :mash, base_class: C1 = Class.new(OpenStruct)
+            from :mash
+            to :json
+            input :mash, base_class: C1 = Class.new(OpenStruct)
             controller :authorize, base_class: C2 = Class.new(Object)
             controller :sync, base_class: C3 = Class.new(Object)
             controller :store, base_class: C4 = Class.new(Object)
@@ -45,7 +47,7 @@ RSpec.describe SteelWheel::Rail do
       end
 
       it 'given has access to all nested methods' do
-        operation = operation_class.from(value).to(:json).prepare
+        operation = operation_class.accept(value).prepare
         expect(operation.call).to eq('aoueyi3')
       end
     end
@@ -54,7 +56,9 @@ RSpec.describe SteelWheel::Rail do
       vars do
         operation_class do
           Class.new(SteelWheel::Rail) do
-            controller :mash, base_class: X1 = Class.new(OpenStruct)
+            from :mash
+            to :json
+            input :mash, base_class: X1 = Class.new(OpenStruct)
             controller :authorize, base_class: X2 = Class.new(Object)
             controller :sync, base_class: X3 = Class.new(Object)
             controller :store, base_class: X4 = Class.new(Object)
@@ -98,7 +102,7 @@ RSpec.describe SteelWheel::Rail do
       end
 
       it 'given has errors' do
-        operation = operation_class.from(value).to(:json).prepare
+        operation = operation_class.accept(value).prepare
         expect(operation.given.errors).to_not be_empty
       end
     end

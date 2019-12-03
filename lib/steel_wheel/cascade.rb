@@ -33,14 +33,11 @@ module SteelWheel
       end
 
       def __sw_decorate__(cascade, base_class)
-        if cascade.first_step?
-          cascade.current_object = __sw_wrap_input__(base_class)
-        else
-          cascade.wrapped_object = __sw_wrap__(cascade.current_object,
-                                               wrapper_object: base_class.new,
-                                               accessor: cascade.previous_controller)
-          cascade.current_object = cascade.wrapped_object
-        end
+        cascade.wrapped_object =
+          __sw_wrap__(cascade.current_object,
+                      wrapper_object: base_class.new,
+                      accessor: cascade.previous_controller)
+        cascade.current_object = cascade.wrapped_object
       end
 
       def __sw_handle_step__(cascade, base_class, controller)

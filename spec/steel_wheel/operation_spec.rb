@@ -6,9 +6,11 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
+            from :mash
+            to :json
             controller :formatter
             controller :final
-            controller :mash, base_class: Z1 = Class.new
+            input :mash, base_class: Z1 = Class.new
             branch :left, base_class: SteelWheel::Rail
             branch :right, base_class: SteelWheel::Rail
 
@@ -79,7 +81,7 @@ RSpec.describe SteelWheel::Operation do
       end
 
       it 'given has no errors' do
-        operation = operation_class.from(value).to(:json).prepare
+        operation = operation_class.accept(value).prepare
         expect(operation.given.a).to eq 'a'
         expect(operation.given.o).to eq 'o'
         expect(operation.given.u).to eq 'u'
@@ -95,9 +97,11 @@ RSpec.describe SteelWheel::Operation do
       vars do
         operation_class do
           Class.new(SteelWheel::Operation) do
+            from :mash
+            to :json
             controller :formatter
             controller :final
-            controller :mash, base_class: Z1 = Class.new
+            input :mash, base_class: Z1 = Class.new
             branch :left, base_class: SteelWheel::Rail
             branch :right, base_class: SteelWheel::Rail
 
@@ -168,7 +172,7 @@ RSpec.describe SteelWheel::Operation do
       end
 
       it 'given has errors' do
-        operation = operation_class.from(value).to(:json).prepare
+        operation = operation_class.accept(value).prepare
         expect(operation.given.a).to eq 'a'
         expect(operation.given.o).to eq 'o'
         expect do
