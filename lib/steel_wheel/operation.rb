@@ -14,7 +14,13 @@ module SteelWheel
         dispatcher = base_class.new
         branch_name = dispatcher.call(cascade.current_object)
         cascade.branch = branch_name
-        branches[branch_name].prepare(cascade)
+        branch_class = branches[branch_name]
+        branch_class.singleton_class.class_eval do
+          def __sw_resolve_cascade__(cascade)
+            new(cascade.current_object)
+          end
+        end
+        branch_class.prepare(cascade)
       else
         super
       end
