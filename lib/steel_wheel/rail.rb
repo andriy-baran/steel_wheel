@@ -43,7 +43,7 @@ module SteelWheel
 
     def self.prepare(cascade = SteelWheel::CascadingState.new)
       if cascade.first_step?
-        cascade.previous_controller = self.in
+        cascade.previous_step = self.in
         cascade.current_object = __sw_wrap_input__
         cascade.inc_step
       end

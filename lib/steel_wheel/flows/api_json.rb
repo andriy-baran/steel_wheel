@@ -18,7 +18,7 @@ module SteelWheel
         def controllers_cascade_decorating(cascade, &block)
           controllers.each do |controller, base_class|
             __sw_component_inactive_error__(controller).call if base_class.nil?
-            block.call(cascade.current_object) if cascade.previous_controller == :context && block_given?
+            block.call(cascade.current_object) if cascade.previous_step == :context && block_given?
             cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
 
             __sw_handle_step__(cascade, base_class, controller)
@@ -27,7 +27,7 @@ module SteelWheel
 
         def prepare(cascade = SteelWheel::CascadingState.new, &block)
           if cascade.first_step?
-            cascade.previous_controller = self.in
+            cascade.previous_step = self.in
             cascade.current_object = __sw_wrap_input__
             cascade.inc_step
           end
