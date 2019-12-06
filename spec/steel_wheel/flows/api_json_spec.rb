@@ -47,6 +47,7 @@ RSpec.describe SteelWheel::Operation do
     operation_class do
       Class.new(SteelWheel::Operation) do
         include SteelWheel::Flows::ApiJson
+        result_defaults :json, content_type: 'application/json', status: :ok, text: '{}'
         def call
           'Operation result'
         end

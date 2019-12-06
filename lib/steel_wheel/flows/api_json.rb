@@ -5,10 +5,11 @@ module SteelWheel
 
       module ClassMethods
         def inherited(subclass)
+          super
           subclass.errors_format(&errors_format)
           subclass.from(self.in)
           subclass.to(self.out)
-          super
+          subclass.result_attrs = result_attrs
         end
 
         def errors_format(&block)
@@ -69,6 +70,7 @@ module SteelWheel
           input :params, base_class: SteelWheel::Params
           controller :context, base_class: SteelWheel::Context
           controller :action, base_class: SteelWheel::Action
+          output :json, base_class: SteelWheel::Operation::Result
         end
       end
     end

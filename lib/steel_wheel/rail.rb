@@ -5,15 +5,23 @@ module SteelWheel
     include SteelWheel::Composite[:output]
     include SteelWheel::Cascade[:controllers]
 
+    class Result < OpenStruct; end
+
     class << self
-      attr_accessor :in, :out, :initial_value
+      attr_accessor :in, :out, :initial_value, :result_attrs
     end
 
     attr_reader :result, :given
 
     def initialize(given)
       @given = given
-      @result = result
+      @result = self.class.__sw_wrap_output__
+    end
+
+    def inherited(subclass)
+      subclass.from(self.in)
+      subclass.to(self.out)
+      subclass.result_attrs = result_attrs
     end
 
     def self.from(input)
@@ -30,8 +38,25 @@ module SteelWheel
       inputs[self.in].nil? ? initial_value : inputs[self.in].new(initial_value)
     end
 
+    def self.__sw_wrap_output__
+      if outputs[self.out].nil?
+        Result.new(result_attrs[self.out])
+      else
+        outputs[self.class.out].new(result_attrs[self.out])
+      end
+    end
+
     def self.accept(value)
       self.initial_value = value
+      self
+    end
+
+    def self.result_attrs
+      @result_attrs ||= {}
+    end
+
+    def self.result_defaults(input_name, **value)
+      self.result_attrs[input_name] = value
       self
     end
 
