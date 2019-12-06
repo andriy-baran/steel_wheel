@@ -2,6 +2,8 @@ module SteelWheel
   class Operation < SteelWheel::Rail
     include SteelWheel::Composite[:branch]
 
+    class Result < OpenStruct; end
+
     def self.dispatch(&block)
       klass = Class.new
       klass.send(:define_method, :call, &block)

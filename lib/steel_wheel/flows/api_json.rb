@@ -38,22 +38,15 @@ module SteelWheel
       end
 
       module InstanceMethods
-        def initialize(given)
-          @given = given
-          @result = Result.new(text: {}.to_json, content_type: 'application/json', status: :ok)
+        def on_params_failure
+          result.json = self.class.errors_format.call(given.errors.full_messages.join("\n")).to_json
+          result.status = :bad_request
         end
 
-        def on_failure(failed_step)
-          if failed_step == :params
-            result.text = self.class.errors_format.call(given.errors.full_messages.join("\n")).to_json
-            result.status = :bad_request
-          elsif failed_step == :context
-            errors = given.errors.full_messages_for(given.error_key).join("\n")
-            result.text = self.class.errors_format.call(errors).to_json
-            result.status = given.error_key
-          else
-            # NOOP
-          end
+        def on_context_failure
+          errors = given.errors.full_messages_for(given.error_key).join("\n")
+          result.json = self.class.errors_format.call(errors).to_json
+          result.status = given.error_key
         end
 
         def on_success
@@ -71,6 +64,7 @@ module SteelWheel
           controller :context, base_class: SteelWheel::Context
           controller :action, base_class: SteelWheel::Action
           output :json, base_class: SteelWheel::Operation::Result
+          result_defaults :json, json: '{}', status: :ok
         end
       end
     end

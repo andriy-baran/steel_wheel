@@ -48,6 +48,15 @@ RSpec.describe SteelWheel::Operation do
       Class.new(SteelWheel::Operation) do
         include SteelWheel::Flows::ApiJson
         result_defaults :json, content_type: 'application/json', status: :ok, text: '{}'
+        def on_params_failure
+          result.text = self.class.errors_format.call(given.errors.full_messages.join("\n")).to_json
+          result.status = :bad_request
+        end
+        def on_context_failure
+          errors = given.errors.full_messages_for(given.error_key).join("\n")
+          result.text = self.class.errors_format.call(errors).to_json
+          result.status = given.error_key
+        end
         def call
           'Operation result'
         end

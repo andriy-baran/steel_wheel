@@ -62,7 +62,15 @@ module SteelWheel
 
     def self.__sw_resolve_cascade__(cascade)
       new(cascade.current_object).tap do |op|
-        cascade.error_track? ? op.on_failure(cascade.previous_controller) : op.on_success
+        if cascade.error_track?
+          if op.respond_to?(:"on_#{cascade.previous_step}_failure")
+            op.public_send(:"on_#{cascade.previous_step}_failure")
+          else
+            op.on_failure(cascade.previous_step)
+          end
+        else
+          op.on_success
+        end
       end
     end
 
