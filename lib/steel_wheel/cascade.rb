@@ -33,17 +33,19 @@ module SteelWheel
       end
 
       def __sw_decorate__(cascade, base_class)
-        cascade.wrapped_object =
-          __sw_wrap__(cascade.current_object,
-                      wrapper_object: base_class.new,
-                      accessor: cascade.previous_step)
-        cascade.current_object = cascade.wrapped_object
+        if cascade.initial_step?
+          cascade.current_object = base_class.new
+        else
+          cascade.current_object =
+            __sw_wrap__(cascade.current_object,
+                        wrapper_object: base_class.new,
+                        accessor: cascade.previous_step)
+        end
       end
 
       def __sw_handle_step__(cascade, base_class, step)
         __sw_decorate__(cascade, base_class)
         cascade.previous_step = step
-        cascade.inc_step
       end
     end
 
@@ -65,13 +67,15 @@ module SteelWheel
       end
       mod.__sw_cascade_components__ = components
       mod.module_eval do
-        define_method(:"#{mod.__sw_cascade_components__}_cascade_decorating") do |cascade|
+        define_method(:"#{mod.__sw_cascade_components__}_cascade_decorating") do |cascade = SteelWheel::CascadingState.new|
+          raise(ArgumentError, "must be a subclass of SteelWheel::CascadingState") unless cascade.class <= SteelWheel::CascadingState
           public_send(mod.__sw_cascade_components__).each do |step, base_class|
             __sw_component_inactive_error__(step).call if base_class.nil?
             cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
 
             __sw_handle_step__(cascade, base_class, step)
           end
+          cascade
         end
       end
       mod

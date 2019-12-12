@@ -26,12 +26,7 @@ module SteelWheel
           end
         end
 
-        def prepare(cascade = SteelWheel::CascadingState.new, &block)
-          if cascade.first_step?
-            cascade.previous_step = self.in
-            cascade.current_object = __sw_wrap_input__
-            cascade.inc_step
-          end
+        def prepare(cascade = SteelWheel::CascadingState.new(self.in, __sw_wrap_input__), &block)
           controllers_cascade_decorating(cascade, &block)
           __sw_resolve_cascade__(cascade)
         end

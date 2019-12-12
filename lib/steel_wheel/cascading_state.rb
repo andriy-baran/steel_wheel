@@ -1,18 +1,16 @@
 module SteelWheel
   class CascadingState
-    attr_accessor :current_object, :wrapped_object, :previous_step, :branch
+    attr_accessor :current_object, :previous_step, :branch
 
-    def initialize
+    def initialize(previous_step = nil, current_object = nil)
       @step = 0
       @error_track = false
+      @previous_step = previous_step
+      @current_object = current_object
     end
 
-    def inc_step
-      @step += 1
-    end
-
-    def first_step?
-      @step.zero?
+    def initial_step?
+      previous_step.nil? && current_object.nil?
     end
 
     def failure
