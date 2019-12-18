@@ -36,20 +36,19 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.required_ruby_version = '>= 2.2.2'
 
-  version_string = ['>= 3.0']
+  version_string = ['>= 3.2', '< 7']
 
   spec.add_runtime_dependency 'activemodel', version_string
   spec.add_runtime_dependency 'railties', version_string
 
   spec.add_dependency 'dry-logic', '~> 0.4.2'
-  spec.add_dependency 'dry-struct'
+  spec.add_dependency 'dry-struct', '~> 0.6'
   spec.add_dependency 'dry-types', '~> 0.13.4'
-  spec.add_dependency 'memery'
-  spec.add_dependency 'dry-inflector'
+  spec.add_dependency 'memery', '~> 1'
 
   spec.add_development_dependency 'bundler', '~> 1.16'
-  spec.add_development_dependency 'pry'
+  spec.add_development_dependency 'pry', '~> 0.10'
   spec.add_development_dependency 'rake', '~> 10.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
-  spec.add_development_dependency 'rspec_vars_helper'
+  spec.add_development_dependency 'rspec_vars_helper', '~> 0.1'
 end
