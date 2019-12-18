@@ -1,0 +1,8 @@
+Description:
+    Generates operations files
+
+Example:
+    rails generate steel_wheel:context Thing
+
+    This will create:
+        app/contexts/thing_operation.rb

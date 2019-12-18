@@ -1,0 +1,8 @@
+Description:
+    Generates operations files
+
+Example:
+    rails generate steel_wheel:params Thing
+
+    This will create:
+        app/params/thing_params.rb
