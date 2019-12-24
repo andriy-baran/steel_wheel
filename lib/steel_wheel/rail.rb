@@ -79,6 +79,10 @@ module SteelWheel
       __sw_resolve_cascade__(cascade)
     end
 
+    class << self
+      alias_method :call, :prepare
+    end
+
     def on_failure(failed_step = nil)
       # NOOP
     end
