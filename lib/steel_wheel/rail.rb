@@ -42,7 +42,7 @@ module SteelWheel
       if outputs[self.out].nil?
         Result.new(result_attrs[self.out])
       else
-        outputs[self.class.out].new(result_attrs[self.out])
+        outputs[self.out].new(result_attrs[self.out])
       end
     end
 
@@ -52,7 +52,7 @@ module SteelWheel
     end
 
     def self.result_attrs
-      @result_attrs ||= {}
+      @result_attrs ||= Hash.new { |hash, key| hash[key] = {} }
     end
 
     def self.result_defaults(input_name, **value)
@@ -61,16 +61,32 @@ module SteelWheel
     end
 
     def self.__sw_resolve_cascade__(cascade)
-      new(cascade.current_object).tap do |op|
+      new(cascade.current_object).tap do |rail|
         if cascade.error_track?
-          if op.respond_to?(:"on_#{cascade.previous_step}_failure")
-            op.public_send(:"on_#{cascade.previous_step}_failure")
-          else
-            op.on_failure(cascade.previous_step)
-          end
+          __sw_notify_error__(rail, cascade.previous_step)
         else
-          op.on_success
+          __sw_notify_success__(rail)
         end
+      end
+    end
+
+    def self.__sw_notify_error__(rail, step)
+      if rail.result.respond_to?(:"on_#{step}_failure")
+        rail.result.public_send(:"on_#{step}_failure", rail.given)
+      elsif rail.result.respond_to?(:on_failure)
+        rail.result.on_failure(rail.given, step)
+      elsif rail.respond_to?(:"on_#{step}_failure")
+        rail.public_send(:"on_#{step}_failure")
+      else
+        rail.on_failure(step)
+      end
+    end
+
+    def self.__sw_notify_success__(rail)
+      if rail.result.respond_to?(:on_success)
+        rail.result.on_success(rail.given)
+      else
+        rail.on_success
       end
     end
 
