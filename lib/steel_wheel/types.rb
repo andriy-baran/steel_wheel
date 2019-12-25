@@ -2,7 +2,7 @@ module SteelWheel
   module Types
     include Dry::Types.module
     Struct    = SteelWheel::Params.meta(omittable: true)
-    StructDSL = SteelWheel::Params.extend(SteelWheel::Params::DSL).meta(omittable: true)
+    StructDSL = ::Class.new(SteelWheel::Params).extend(SteelWheel::Params::DSL).meta(omittable: true)
     Integer   = SteelWheel::Types::Params::Integer.optional.meta(omittable: true).default(nil)
     Decimal   = SteelWheel::Types::Params::Decimal.optional.meta(omittable: true).default(nil)
     Float     = SteelWheel::Types::Params::Float.optional.meta(omittable: true).default(nil)

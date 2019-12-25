@@ -2,11 +2,11 @@ module SteelWheel
   class Params
     module DSL
       def each(&block)
-        array.of(struct, &block)
+        array.of(struct_dsl, &block)
       end
 
       def has(&block)
-        struct(&block)
+        struct_dsl(&block)
       end
 
       def method_missing(method_name, *args, &block)
