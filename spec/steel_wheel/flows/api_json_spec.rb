@@ -47,7 +47,11 @@ RSpec.describe SteelWheel::Operation do
     operation_class do
       Class.new(SteelWheel::Operation) do
         include SteelWheel::Flows::ApiJson
-        result_defaults :json, content_type: 'application/json', status: :ok, text: '{}'
+        class << self
+          attr_accessor :init_proc
+        end
+        self.init_proc = ->(klass) { klass.new({content_type: 'application/json', status: :ok, text: '{}'}) }
+        json(init: init_proc) {}
         def on_params_failure
           result.text = self.class.errors_format.call(given.errors.full_messages.join("\n")).to_json
           result.status = :bad_request
@@ -170,7 +174,7 @@ RSpec.describe SteelWheel::Operation do
     end
 
     it 'returns an instance of self' do
-      expect(operation_class.prepare).to be_an_instance_of operation_class
+      expect(operation_class.accept({}).prepare).to be_an_instance_of operation_class
     end
 
     context 'when params object is invalid' do

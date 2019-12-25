@@ -8,7 +8,7 @@ module SteelWheel
     class Result < OpenStruct; end
 
     class << self
-      attr_accessor :in, :out, :initial_value, :result_attrs
+      attr_accessor :in, :out, :initial_values
     end
 
     attr_reader :result, :given
@@ -21,7 +21,6 @@ module SteelWheel
     def inherited(subclass)
       subclass.from(self.in)
       subclass.to(self.out)
-      subclass.result_attrs = result_attrs
     end
 
     def self.from(input)
@@ -35,28 +34,23 @@ module SteelWheel
     end
 
     def self.__sw_wrap_input__
-      inputs[self.in].nil? ? initial_value : inputs[self.in].new(initial_value)
+      if inputs[self.in].nil?
+        initial_values
+      else
+        inputs[self.in].__sw_init__(inputs[self.in], *initial_values)
+      end
     end
 
     def self.__sw_wrap_output__
       if outputs[self.out].nil?
-        Result.new(result_attrs[self.out])
+        Result.new
       else
-        outputs[self.out].new(result_attrs[self.out])
+        outputs[self.out].__sw_init__(outputs[self.out])
       end
     end
 
-    def self.accept(value)
-      self.initial_value = value
-      self
-    end
-
-    def self.result_attrs
-      @result_attrs ||= Hash.new { |hash, key| hash[key] = {} }
-    end
-
-    def self.result_defaults(input_name, **value)
-      self.result_attrs[input_name] = value
+    def self.accept(*values)
+      self.initial_values = values
       self
     end
 

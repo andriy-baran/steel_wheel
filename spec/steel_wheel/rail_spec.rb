@@ -8,7 +8,7 @@ RSpec.describe SteelWheel::Rail do
           Class.new(SteelWheel::Rail) do
             from :mash
             to :json
-            input :mash, base_class: C1 = Class.new(OpenStruct)
+            input :mash, base_class: C1 = Class.new(OpenStruct), init: ->(klass, value) { klass.new(value) }
             controller :authorize, base_class: C2 = Class.new(Object)
             controller :sync, base_class: C3 = Class.new(Object)
             controller :store, base_class: C4 = Class.new(Object)
@@ -58,7 +58,7 @@ RSpec.describe SteelWheel::Rail do
           Class.new(SteelWheel::Rail) do
             from :mash
             to :json
-            input :mash, base_class: X1 = Class.new(OpenStruct)
+            input :mash, base_class: X1 = Class.new(OpenStruct), init: ->(klass, values) { klass.new(values) }
             controller :authorize, base_class: X2 = Class.new(Object)
             controller :sync, base_class: X3 = Class.new(Object)
             controller :store, base_class: X4 = Class.new(Object)

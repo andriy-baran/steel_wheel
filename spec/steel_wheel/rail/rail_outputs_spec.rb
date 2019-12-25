@@ -8,13 +8,13 @@ RSpec.describe SteelWheel::Rail do
           Class.new(SteelWheel::Rail) do
             from :mash
             to :json
-            input :mash, base_class: Class.new(OpenStruct)
-            controller :authorize, base_class: Class.new(Object)
-            controller :sync, base_class: Class.new(Object)
-            controller :store, base_class: Class.new(Object)
-            controller :formatter, base_class: Class.new(Object)
-            output :json, base_class: OpenStruct
-            output :rake, base_class: OpenStruct
+            input :mash, base_class: Class.new(OpenStruct), init: ->(klass, value) { klass.new(value) }
+            controller :authorize
+            controller :sync
+            controller :store
+            controller :formatter
+            output :json, base_class: Class.new(OpenStruct)
+            output :rake, base_class: Class.new(OpenStruct)
             mash do
               def a
                 'a'
@@ -93,13 +93,13 @@ RSpec.describe SteelWheel::Rail do
           Class.new(SteelWheel::Rail) do
             from :mash
             to :json
-            input :mash, base_class: Class.new(OpenStruct)
-            controller :authorize, base_class: Class.new(Object)
-            controller :sync, base_class: Class.new(Object)
-            controller :store, base_class: Class.new(Object)
-            controller :formatter, base_class: Class.new(Object)
-            output :json, base_class: OpenStruct
-            output :rake, base_class: OpenStruct
+            input :mash, base_class: Class.new(OpenStruct), init: ->(klass, value) { klass.new(value) }
+            controller :authorize
+            controller :sync
+            controller :store
+            controller :formatter
+            output :json, base_class: Class.new(OpenStruct)
+            output :rake, base_class: Class.new(OpenStruct)
             mash do
               def a
                 'a'

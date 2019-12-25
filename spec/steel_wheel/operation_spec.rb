@@ -101,7 +101,7 @@ RSpec.describe SteelWheel::Operation do
             to :json
             controller :formatter
             controller :final
-            input :mash, base_class: Z1 = Class.new
+            input :mash, base_class: Z1 = Class.new, init: ->(klass, values) { klass.new(values) }
             branch :left, base_class: SteelWheel::Rail
             branch :right, base_class: SteelWheel::Rail
 

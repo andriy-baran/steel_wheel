@@ -12,6 +12,10 @@ module SteelWheel
       def __sw_add_component_class_accessors__(method_name, component_name)
         singleton_class.class_eval { attr_accessor :"#{method_name}_#{component_name}_class" }
       end
+
+      def __sw_default_init__
+        ->(klass, *attrs) { klass.new }
+      end
     end
     def self.[](component_name)
       mod = Module.new do
@@ -31,6 +35,11 @@ module SteelWheel
 
           def store_method(title = component_name)
             :"__sw_store_#{title}_class__"
+          end
+
+          def define_init(klass, init)
+            return klass if init.nil?
+            klass.singleton_class.send(:define_method, :__sw_init__, &init)
           end
         end
       end
@@ -59,34 +68,38 @@ module SteelWheel
           end
         end
 
-        define_method(:"__sw_store_#{mod.component_name}_class__") do |method_name, klass|
+        define_method(:"#{mod.store_method}") do |method_name, klass|
           public_send(:"#{method_name}_#{mod.component_name}_class=", klass)
           public_send(:"#{mod.components_name}")[method_name] = klass
         end
 
-        define_method(:"__sw_activate_#{mod.component_name}_component__") do |method_name, base_class, klass, &block|
+        define_method(:"__sw_activate_#{mod.component_name}_component__") do |method_name, base_class, klass, init = nil, &block|
           component_class = public_send(:"#{method_name}_#{mod.component_name}_class")
           if component_class.present? # inherited
             __sw_subclass_error__(base_class).call unless component_class <= base_class
 
             component_class = Class.new(component_class, &block) if !block.nil?
+            mod.define_init(component_class, init)
             public_send(mod.store_method, method_name, component_class)
           elsif klass.present? && block.nil?
             __sw_subclass_error__(base_class).call unless klass <= base_class
 
+            mod.define_init(klass, init)
             public_send(mod.store_method, method_name, klass)
           elsif klass.nil? && !block.nil?
             component_class = Class.new(base_class, &block)
+            mod.define_init(component_class, init)
             public_send(mod.store_method, method_name, component_class)
           else
             __sw_missing_body_error__.call
           end
         end
 
-        define_method(mod.component_name.to_sym) do |method_name, base_class: Class.new|
+        define_method(mod.component_name.to_sym) do |method_name, base_class: Class.new, init: __sw_default_init__|
           __sw_add_component_class_accessors__(method_name, mod.component_name)
-          singleton_class.send(:define_method, method_name) do |klass = nil, &block|
-            public_send(:"__sw_activate_#{mod.component_name}_component__", method_name, base_class, klass, &block)
+          mod.define_init(base_class, init)
+          singleton_class.send(:define_method, method_name) do |klass = nil, init: nil, &block|
+            public_send(:"__sw_activate_#{mod.component_name}_component__", method_name, base_class, klass, init, &block)
           end
         end
       end

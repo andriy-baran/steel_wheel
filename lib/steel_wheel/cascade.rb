@@ -38,7 +38,7 @@ module SteelWheel
         else
           cascade.current_object =
             __sw_wrap__(cascade.current_object,
-                        wrapper_object: base_class.new,
+                        wrapper_object: base_class.__sw_init__(base_class),
                         accessor: cascade.previous_step)
         end
       end
