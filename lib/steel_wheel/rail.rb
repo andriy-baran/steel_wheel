@@ -1,8 +1,8 @@
 module SteelWheel
   class Rail
-    include SteelWheel::Composite[:controller]
-    include SteelWheel::Composite[:input]
-    include SteelWheel::Composite[:output]
+    include SteelWheel::Composite[:controllers]
+    include SteelWheel::Composite[:inputs]
+    include SteelWheel::Composite[:outputs]
     include SteelWheel::Cascade[:controllers]
 
     class Result < OpenStruct; end

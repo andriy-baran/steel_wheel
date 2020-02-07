@@ -4,7 +4,7 @@ RSpec.describe SteelWheel::Cascade do
   vars do
     operation_class do
       Class.new do
-        include SteelWheel::Composite[:block]
+        include SteelWheel::Composite[:blocks]
         include SteelWheel::Cascade[:blocks]
 
         block :adapter

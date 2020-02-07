@@ -4,7 +4,7 @@ RSpec.describe SteelWheel::Composite do
   vars do
     operation_class do
       Class.new do
-        include SteelWheel::Composite[:controller]
+        include SteelWheel::Composite[:controllers]
 
         def initialize(formatter)
           @formatter = formatter

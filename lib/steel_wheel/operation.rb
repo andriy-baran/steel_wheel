@@ -1,14 +1,15 @@
 module SteelWheel
   class Operation < SteelWheel::Rail
-    include SteelWheel::Composite[:branch]
+    include SteelWheel::Composite[:branches]
 
     class Result < OpenStruct; end
 
     def self.dispatch(&block)
       klass = Class.new
       klass.send(:define_method, :call, &block)
-      controller :"dispatcher#{controllers.size}", base_class: klass
-      public_send(:"dispatcher#{controllers.size}") {}
+      title = :"dispatcher#{controllers.size}"
+      controller title, base_class: klass
+      public_send(title) {}
     end
 
     def self.__sw_handle_step__(cascade, base_class, component)
