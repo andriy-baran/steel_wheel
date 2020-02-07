@@ -31,20 +31,41 @@ module SteelWheel
       end
     end
 
+    module InheritanceHelpers
+      def inherited(subclass)
+        subclass.__sw_inheritance_reactivate_composites__
+      end
+
+      def __sw_inheritance_reactivate_composites__
+        __sw_included_composite_modules__.each do |composite|
+          __sw_inheritance_activate_parent_components_of_composite__(composite)
+        end
+      end
+
+      def __sw_included_composite_modules__
+        included_modules.select{|m| m.to_s.match(/SteelWheel::Composite/) }
+      end
+
+      def __sw_inheritance_activate_parent_components_of_composite__(composite)
+        superclass.public_send("#{composite.components_name}").each do |component, klass|
+          public_send(composite.__sw_store_method_name__, component, klass)
+        end
+      end
+    end
+
     def self.[](components_name)
       return self.const_get(classify(components_name).to_sym) if self.constants.include?(classify(components_name).to_sym)
       mod = Module.new do
-
         class << self
           attr_accessor :component_name, :components_name
 
           def included(receiver)
             receiver.extend self
-            receiver.extend DecorationHelpers
           end
 
           def extended(receiver)
-            receiver.__sw_composites__[components_name] = component_name
+            receiver.extend DecorationHelpers
+            receiver.extend InheritanceHelpers
           end
 
           def __sw_store_method_name__(title = component_name)
@@ -94,36 +115,24 @@ module SteelWheel
               end
             end
           end
+
+          def define_components_registry
+            mod = self
+            module_eval <<-METHOD, __FILE__, __LINE__ + 1
+              def #{mod.components_name}
+                @#{mod.components_name} ||= {}
+              end
+            METHOD
+          end
         end
       end
       const_set(classify(components_name), mod)
       mod.components_name = components_name
       mod.component_name = singularize(components_name)
-      mod.module_eval <<-METHOD, __FILE__, __LINE__ + 1
-        def #{mod.components_name}
-          @#{mod.components_name} ||= {}
-        end
-
-        def __sw_composites__
-          @@__sw_composites__ ||= {}
-        end
-      METHOD
-      mod.module_eval do
-        define_method(:inherited) do |subclass|
-          included_modules
-            .select{|m| m.to_s.match(/SteelWheel::Composite/)  }
-            .each{|composite| subclass.__sw_composites__[composite.components_name] = composite.component_name.to_s}
-          subclass.__sw_composites__.each do |(components_name, component_name)|
-            public_send("#{components_name}").each do |component, klass|
-              store_method = mod.__sw_store_method_name__(component_name)
-              subclass.public_send(store_method, component, klass)
-            end
-          end
-        end
-      end
+      mod.define_components_registry
+      mod.define_component_adding_method
       mod.define_component_store_method
       mod.define_component_activation_method
-      mod.define_component_adding_method
       mod
     end
   end
