@@ -13,22 +13,22 @@ RSpec.describe SteelWheel::Rail do
             controller :authorize
             output :json, base_class: Class.new(OpenStruct)
             output :rake, base_class: Class.new(OpenStruct)
-            array do
+            array_input do
               def a
                 'a'
               end
             end
-            mash do
+            mash_input do
               def a
                 'a'
               end
             end
-            authorize do
+            authorize_controller do
               def o
                 'o'
               end
             end
-            rake do
+            rake_output do
               def on_success(given)
                 self.obj = {
                   a: given.a,

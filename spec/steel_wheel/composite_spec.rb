@@ -13,13 +13,13 @@ RSpec.describe SteelWheel::Composite do
         controller :parser
         controller :formatter
 
-        parser do
+        parser_controller do
           def parse(json)
             JSON.parse(json, symbolize_names: true)
           end
         end
 
-        formatter do
+        formatter_controller do
           attr_reader :id
           def initialize(opts)
             @id = opts[:id]
@@ -52,7 +52,7 @@ RSpec.describe SteelWheel::Composite do
     vars do
       child_operation_class do
         Class.new(operation_class) do
-          formatter do
+          formatter_controller do
             def call
               { id: id, child: true }
             end

@@ -14,7 +14,7 @@ RSpec.describe SteelWheel::Operation do
             branch :left, base_class: SteelWheel::Rail
             branch :right, base_class: SteelWheel::Rail
 
-            mash do
+            mash_input do
               attr_reader :id
               def initialize(opts = {})
                 @id = opts[:id]
@@ -29,22 +29,22 @@ RSpec.describe SteelWheel::Operation do
               cxt.a == 'a' ? :left : :right
             end
 
-            formatter do
+            formatter_controller do
               def i
                 'i'
               end
             end
 
-            final do
+            final_controller do
               def y
                 'y'
               end
             end
 
-            left do
+            left_branch do
               controller :authorize
               controller :sync
-              authorize do
+              authorize_controller do
                 include ActiveModel::Validations
                 def o
                   'o'
@@ -55,17 +55,17 @@ RSpec.describe SteelWheel::Operation do
                 end
               end
 
-              sync do
+              sync_controller do
                 def u
                   'u'
                 end
               end
             end
 
-            right do
+            right_branch do
               controller :store
 
-              store do
+              store_controller do
                 def e
                   'e'
                 end
@@ -105,7 +105,7 @@ RSpec.describe SteelWheel::Operation do
             branch :left, base_class: SteelWheel::Rail
             branch :right, base_class: SteelWheel::Rail
 
-            mash do
+            mash_input do
               attr_reader :id
               def initialize(opts)
                 @id = opts[:id]
@@ -120,22 +120,22 @@ RSpec.describe SteelWheel::Operation do
               cxt.a == 'a' ? :left : :right
             end
 
-            formatter do
+            formatter_controller do
               def i
                 'i'
               end
             end
 
-            final do
+            final_controller do
               def y
                 'y'
               end
             end
 
-            left do
+            left_branch do
               controller :authorize
               controller :sync
-              authorize do
+              authorize_controller do
                 include ActiveModel::Validations
                 def o
                   'o'
@@ -146,17 +146,17 @@ RSpec.describe SteelWheel::Operation do
                 end
               end
 
-              sync do
+              sync_controller do
                 def u
                   'u'
                 end
               end
             end
 
-            right do
+            right_branch do
               controller :store
 
-              store do
+              store_controller do
                 def e
                   'e'
                 end
@@ -175,18 +175,18 @@ RSpec.describe SteelWheel::Operation do
         operation = operation_class.accept(value).prepare
         expect(operation.given.a).to eq 'a'
         expect(operation.given.o).to eq 'o'
-        expect do
+        expect {
           operation.given.u
-        end.to raise_error(NoMethodError)
-        expect do
+        }.to raise_error(NoMethodError)
+        expect {
           operation.given.i
-        end.to raise_error(NoMethodError)
-        expect do
+        }.to raise_error(NoMethodError)
+        expect {
           operation.given.y
-        end.to raise_error(NoMethodError)
-        expect do
+        }.to raise_error(NoMethodError)
+        expect {
           operation.given.e
-        end.to raise_error(NoMethodError)
+        }.to raise_error(NoMethodError)
       end
     end
   end

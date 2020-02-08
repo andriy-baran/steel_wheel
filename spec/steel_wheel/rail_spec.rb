@@ -13,27 +13,27 @@ RSpec.describe SteelWheel::Rail do
             controller :sync, base_class: C3 = Class.new(Object)
             controller :store, base_class: C4 = Class.new(Object)
             controller :formatter, base_class: C5 = Class.new(Object)
-            mash do
+            mash_input do
               def a
                 'a'
               end
             end
-            authorize do
+            authorize_controller do
               def o
                 'o'
               end
             end
-            sync do
+            sync_controller do
               def u
                 'u'
               end
             end
-            store do
+            store_controller do
               def e
                 'e'
               end
             end
-            formatter do
+            formatter_controller do
               def i
                 'i'
               end
@@ -63,12 +63,12 @@ RSpec.describe SteelWheel::Rail do
             controller :sync, base_class: X3 = Class.new(Object)
             controller :store, base_class: X4 = Class.new(Object)
             controller :formatter, base_class: X5 = Class.new(Object)
-            mash do
+            mash_input do
               def a
                 'a'
               end
             end
-            authorize do
+            authorize_controller do
               include ActiveModel::Validations
               def o
                 'o'
@@ -78,17 +78,17 @@ RSpec.describe SteelWheel::Rail do
                 errors.add(:base, "Error with id=#{id}") if id == 3
               end
             end
-            sync do
+            sync_controller do
               def u
                 'u'
               end
             end
-            store do
+            store_controller do
               def e
                 'e'
               end
             end
-            formatter do
+            formatter_controller do
               def i
                 'i'
               end

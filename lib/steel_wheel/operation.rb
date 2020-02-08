@@ -9,7 +9,7 @@ module SteelWheel
       klass.send(:define_method, :call, &block)
       title = :"dispatcher#{controllers.size}"
       controller title, base_class: klass
-      public_send(title) {}
+      public_send("#{title}_controller") {}
     end
 
     def self.__sw_handle_step__(cascade, base_class, component)

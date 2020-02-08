@@ -15,37 +15,37 @@ RSpec.describe SteelWheel::Rail do
             controller :formatter
             output :json, base_class: Class.new(OpenStruct)
             output :rake, base_class: Class.new(OpenStruct)
-            mash do
+            mash_input do
               def a
                 'a'
               end
             end
-            authorize do
+            authorize_controller do
               def o
                 'o'
               end
             end
-            sync do
+            sync_controller do
               def u
                 'u'
               end
             end
-            store do
+            store_controller do
               def e
                 'e'
               end
             end
-            formatter do
+            formatter_controller do
               def i
                 'i'
               end
             end
-            json do
+            json_output do
               def on_success(given)
                 self.string = "#{given.a}#{given.o}#{given.u}#{given.e}y#{given.i}#{given.id}"
               end
             end
-            rake do
+            rake_output do
               def on_success(given)
                 self.obj = {
                   a: given.a,
@@ -100,12 +100,12 @@ RSpec.describe SteelWheel::Rail do
             controller :formatter
             output :json, base_class: Class.new(OpenStruct)
             output :rake, base_class: Class.new(OpenStruct)
-            mash do
+            mash_input do
               def a
                 'a'
               end
             end
-            authorize do
+            authorize_controller do
               include ActiveModel::Validations
               def o
                 'o'
@@ -115,27 +115,27 @@ RSpec.describe SteelWheel::Rail do
                 errors.add(:base, "Error with id=#{id}") if id == 3
               end
             end
-            sync do
+            sync_controller do
               def u
                 'u'
               end
             end
-            store do
+            store_controller do
               def e
                 'e'
               end
             end
-            formatter do
+            formatter_controller do
               def i
                 'i'
               end
             end
-            json do
+            json_output do
               def on_authorize_failure(given)
                 self.error = given.errors.full_messages.join
               end
             end
-            rake do
+            rake_output do
               def on_failure(given, step)
                 self.error = given.errors.full_messages.join
                 self.step = step

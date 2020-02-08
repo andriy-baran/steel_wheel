@@ -59,6 +59,10 @@ module SteelWheel
           controller :action, base_class: SteelWheel::Action
           output :json, base_class: SteelWheel::Operation::Result, init: ->(klass) { klass.new({json: '{}', status: :ok}) }
         end
+        receiver.singleton_class.send(:alias_method, :params, :params_input)
+        receiver.singleton_class.send(:alias_method, :context, :context_controller)
+        receiver.singleton_class.send(:alias_method, :action, :action_controller)
+        receiver.singleton_class.send(:alias_method, :json, :json_output)
       end
     end
   end

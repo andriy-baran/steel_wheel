@@ -11,13 +11,13 @@ RSpec.describe SteelWheel::Cascade do
         block :preparator
         block :formatter
 
-        adapter {}
-        preparator do
+        adapter_block {}
+        preparator_block do
           def go
             'Go!!!'
           end
         end
-        formatter {}
+        formatter_block {}
       end
     end
     value { { id: 3 } }
@@ -27,7 +27,7 @@ RSpec.describe SteelWheel::Cascade do
     vars do
       child_operation_class do
         Class.new(operation_class) do
-          preparator do
+          preparator_block do
             def go
               'Stop!!!'
             end

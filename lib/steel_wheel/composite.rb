@@ -5,7 +5,7 @@ module SteelWheel
     end
 
     def self.classify(title)
-      inflector.classify(title).to_sym
+      inflector.classify(title)
     end
 
     def self.singularize(title)
@@ -109,7 +109,7 @@ module SteelWheel
               singleton_class.class_eval do
                 attr_accessor :"#{method_name}_#{mod.component_name}_class"
 
-                define_method method_name do |klass = nil, init: nil, &block|
+                define_method :"#{method_name}_#{mod.component_name}" do |klass = nil, init: nil, &block|
                   public_send(mod.__sw_activation_method_name__, method_name, base_class, klass, init, &block)
                 end
               end
