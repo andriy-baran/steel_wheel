@@ -14,7 +14,7 @@ module SteelWheel
       end
     end
 
-    module InvariableMethods
+    module Helpers
       def __sw_wrap__(current_object, wrapper_object:, accessor:)
         wrapper_object.singleton_class.class_eval do
           attr_accessor :__sw_predecessor__
@@ -59,9 +59,7 @@ module SteelWheel
           end
 
           def extended(receiver)
-            unless receiver.included_modules.include?(SteelWheel::Cascade::InvariableMethods)
-              receiver.extend SteelWheel::Cascade::InvariableMethods
-            end
+            receiver.extend Helpers
           end
         end
       end

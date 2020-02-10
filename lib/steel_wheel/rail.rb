@@ -15,7 +15,7 @@ module SteelWheel
 
     def initialize(given)
       @given = given
-      @result = self.class.__sw_wrap_output__
+      @result = self.class.__sw_wrap_output__ || Result.new
     end
 
     def inherited(subclass)
@@ -34,19 +34,20 @@ module SteelWheel
     end
 
     def self.__sw_wrap_input__
-      if inputs[self.in].nil?
-        initial_values
-      else
-        inputs[self.in].__sw_init__(inputs[self.in], *initial_values)
-      end
+      return initial_values if self.in.nil?
+      input_class = public_send(:"#{self.in}_input_class")
+      return initial_values if input_class.nil?
+      input_class.__sw_init__(input_class, *initial_values)
     end
 
     def self.__sw_wrap_output__
-      if outputs[self.out].nil?
-        Result.new
-      else
-        outputs[self.out].__sw_init__(outputs[self.out])
-      end
+      # rescue NoMethodError => ex
+      # "You have not define output class. Please add `output :#{self.out}`"
+      return if self.out.nil?
+      return unless self.respond_to?(:"#{self.out}_output_class")
+      output_class = public_send(:"#{self.out}_output_class")
+      return if output_class.nil?
+      output_class.__sw_init__(output_class)
     end
 
     def self.accept(*values)

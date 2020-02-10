@@ -76,10 +76,14 @@ module SteelWheel
             :"__sw_activate_#{title}_component__"
           end
 
+          def __sw_component_class_reader__(title)
+            :"#{title}_#{component_name}_class"
+          end
+
           def define_component_store_method
             mod = self
             define_method(:"#{mod.__sw_store_method_name__}") do |method_name, klass|
-              public_send(:"#{method_name}_#{mod.component_name}_class=", klass)
+              send(:"#{mod.__sw_component_class_reader__(method_name)}=", klass)
               public_send(:"#{mod.components_name}")[method_name] = klass
             end
           end
@@ -87,7 +91,7 @@ module SteelWheel
           def define_component_activation_method
             mod = self
             define_method(:"__sw_activate_#{mod.component_name}_component__") do |method_name, base_class, klass, init = nil, &block|
-              component_class = public_send(:"#{method_name}_#{mod.component_name}_class") # inherited
+              component_class = public_send(:"#{mod.components_name}")[method_name] # inherited
               raise(ArgumentError, 'please provide a block or class') if component_class.nil? && klass.nil? && block.nil?
 
               target_class = component_class || klass || base_class
@@ -100,19 +104,25 @@ module SteelWheel
             end
           end
 
+          def define_component_configure_method(method_name)
+            mod = self
+            define_method :"#{method_name}_#{mod.component_name}" do |klass = nil, init: nil, &block|
+              base_class = public_send(:"#{mod.__sw_component_class_reader__(method_name)}")
+              public_send(mod.__sw_activation_method_name__, method_name, base_class, klass, init, &block)
+            end
+          end
+
           def define_component_adding_method
             mod = self
             default_init = ->(klass, *attrs) { klass.new }
             define_method(component_name.to_sym) do |method_name, base_class: Class.new, init: default_init|
-              __sw_composite_define_init__(base_class, &init)
-
               singleton_class.class_eval do
-                attr_accessor :"#{method_name}_#{mod.component_name}_class"
-
-                define_method :"#{method_name}_#{mod.component_name}" do |klass = nil, init: nil, &block|
-                  public_send(mod.__sw_activation_method_name__, method_name, base_class, klass, init, &block)
-                end
+                attr_accessor :"#{mod.__sw_component_class_reader__(method_name)}"
+                private :"#{mod.__sw_component_class_reader__(method_name)}="
               end
+              __sw_composite_define_init__(base_class, &init)
+              send(:"#{mod.__sw_component_class_reader__(method_name)}=", base_class)
+              mod.define_component_configure_method(method_name)
             end
           end
 
