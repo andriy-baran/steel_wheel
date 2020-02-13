@@ -2,30 +2,32 @@ module SteelWheel
   module SkipActiveModelErrorsKeys
     def self.[](*skip_keys)
       mod = Module.new do
-        @skip_keys = skip_keys
+        class << self
+          attr_accessor :skip_keys
 
-        def self.skip_keys
-          @skip_keys
+          def extended(klass)
+            klass.include self
+          end
         end
       end
+      mod.skip_keys = skip_keys
       mod.module_eval do
         def self.included(klass)
-          klass.class_eval <<-METHOD, __FILE__, __LINE__ + 1
-            class << klass
-              alias_method :_new, :new
+          mod = self
+          klass.singleton_class.class_eval do
+            alias_method :__new__, :new
 
-              def new(*args)
-                _new(*args).tap do |instance|
-                  class << instance.errors
-                    def full_message(attribute, message)
-                      return message if #{skip_keys.inspect}.include?(attribute)
-                      super
-                    end
+            define_method :new do |*args|
+              __new__(*args).tap do |instance|
+                instance.errors.singleton_class.class_eval do
+                  define_method :full_message do |attribute, message|
+                    return message if mod.skip_keys.include?(attribute)
+                    super(attribute, message)
                   end
                 end
               end
             end
-          METHOD
+          end
         end
       end
       mod
