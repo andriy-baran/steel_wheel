@@ -34,12 +34,12 @@ module SteelWheel
 
       def __sw_decorate__(cascade, base_class)
         if cascade.initial_step?
-          cascade.current_object = base_class.new
+          cascade.current_object = base_class.__sw_init__(base_class)
         else
-          cascade.current_object =
-            __sw_wrap__(cascade.current_object,
-                        wrapper_object: base_class.__sw_init__(base_class),
-                        accessor: cascade.previous_step)
+          cascade.current_object = __sw_wrap__(
+            cascade.current_object,
+            wrapper_object: base_class.__sw_init__(base_class),
+            accessor: cascade.previous_step)
         end
       end
 
@@ -61,21 +61,27 @@ module SteelWheel
           def extended(receiver)
             receiver.extend Helpers
           end
+
+          def __sw_cascade_method_name__
+            :"#{__sw_cascade_components__}_cascade_decorating"
+          end
+
+          def define_cascade_decorating_method
+            mod = self
+            define_method(__sw_cascade_method_name__) do |cascade = SteelWheel::CascadingState.new|
+              raise(ArgumentError, "must be a subclass of SteelWheel::CascadingState") unless cascade.class <= SteelWheel::CascadingState
+              public_send(mod.__sw_cascade_components__).each do |step, base_class|
+                cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
+
+                __sw_handle_step__(cascade, base_class, step)
+              end
+              cascade
+            end
+          end
         end
       end
       mod.__sw_cascade_components__ = components
-      mod.module_eval do
-        define_method(:"#{mod.__sw_cascade_components__}_cascade_decorating") do |cascade = SteelWheel::CascadingState.new|
-          raise(ArgumentError, "must be a subclass of SteelWheel::CascadingState") unless cascade.class <= SteelWheel::CascadingState
-          public_send(mod.__sw_cascade_components__).each do |step, base_class|
-            __sw_component_inactive_error__(step).call if base_class.nil?
-            cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
-
-            __sw_handle_step__(cascade, base_class, step)
-          end
-          cascade
-        end
-      end
+      mod.define_cascade_decorating_method
       mod
     end
   end
