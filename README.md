@@ -1,10 +1,15 @@
 # SteelWheel
 
 ## Intention
-The gem is intended to provide better development experience for rails developers, by introduction the new layer that provides enchanced interface. The new abstractions and flows helps developers focus on domain code and forget about framework details. In a future it will allow to make testing truly isolated 
+The gem is intended to provide better development experience for rails developers
+
+## Solution
+Introduce the new layer that provides enchanced programming interface. The new abstractions and flows helps developers focus on domain code and forget about framework details. 
+
+## Design Concepts
+
+### Typical data flow in web apps
 ![](https://github.com/andriy-baran/steel_wheel/blob/master/assets/action_diagram.png?raw=true)
-## Design
-A key principle used in design of the library is **Separation of Concerns**. Based on experience and following analysis 4 phases were defined in every rails controller.
 1. **Input validations and preparations**
 * describe structure of parameters
 * validate values
@@ -17,7 +22,16 @@ A key principle used in design of the library is **Separation of Concerns**. Bas
 3. **Performing Action**
 4. **Exposing Results**
 
-Each of this phase have a separate object for solving only specific tasks.
+Each of this phase should have a separate object for solving only its specific tasks.
+
+### Cascade decoration
+It's a very simple concept to understand if you imagine Russian nesting doll. So the smallest doll will represent initial step/object and next one will on one hand wrap initial doll and delegate appropriate methods to it and on the other hand will add more methods (decorator pattern), and so on... until we reach the last object. Every step will expand functionality and enrich data so it works as cascade. The result object will responce to any method defined on any object in the cascade. If cascade allows different strategies for nesting it's called **Controlled cascade** 
+
+![](https://github.com/andriy-baran/steel_wheel/blob/master/assets/cascade_decoration.png?raw=true)
+
+### Cell pattern
+It's composition of objects is inspired by biological cells. Each cell has many inputs, many outputs and many internal routes that connect prevous two. If we put this on first diagrams, than parameters is a kind of input, json string is a kind of output, Context and Action are internal routes. Controlled cascade is used for implementing "object decoration routing"
+![](https://github.com/andriy-baran/steel_wheel/blob/master/assets/flow_diagram.png?raw=true)
 
 ## Implementation
 
@@ -151,7 +165,9 @@ And then execute:
 Or install it yourself as:
 
     $ gem install steel_wheel
-
+    
+## We promise
+In the future it will allow to make unit testing fully isolated from database.
 
 ## Development
 
