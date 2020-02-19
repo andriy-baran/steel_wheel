@@ -38,12 +38,21 @@ module SteelWheel
 
       def __sw_inheritance_reactivate_composites__
         __sw_included_composite_modules__.each do |composite|
+          __sw_inheritance_store_parent_components_of_composite__(composite)
           __sw_inheritance_activate_parent_components_of_composite__(composite)
         end
       end
 
       def __sw_included_composite_modules__
         included_modules.select{|m| m.to_s.match(/SteelWheel::Composite/) }
+      end
+
+      def __sw_inheritance_store_parent_components_of_composite__(composite)
+        readers_regexp = Regexp.new(".*#{composite.component_name}_class\\z")
+        superclass.public_methods.grep(readers_regexp).each do |reader_method|
+          klass = superclass.public_send(reader_method)
+          send(:"#{reader_method}=", klass)
+        end
       end
 
       def __sw_inheritance_activate_parent_components_of_composite__(composite)
