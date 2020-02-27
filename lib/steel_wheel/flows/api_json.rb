@@ -21,7 +21,7 @@ module SteelWheel
             block.call(cascade.current_object) if cascade.previous_step == :context && block_given?
             cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
 
-            __sw_handle_step__(cascade, base_class, controller)
+            __sw_handle_step__(:controllers, cascade, base_class, controller)
           end
         end
 

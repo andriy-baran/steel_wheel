@@ -32,19 +32,22 @@ module SteelWheel
         o.class.ancestors.include?(ActiveModel::Validations) && o.invalid?
       end
 
-      def __sw_decorate__(cascade, base_class)
+      def __sw_decorate__(cascade, instance)
         if cascade.initial_step?
-          cascade.current_object = base_class.__sw_init__(base_class)
+          cascade.current_object = instance
         else
           cascade.current_object = __sw_wrap__(
             cascade.current_object,
-            wrapper_object: base_class.__sw_init__(base_class),
+            wrapper_object: instance,
             accessor: cascade.previous_step)
         end
       end
 
-      def __sw_handle_step__(cascade, base_class, step)
-        __sw_decorate__(cascade, base_class)
+      def __sw_handle_step__(components_group, cascade, base_class, step)
+        mod_name = "SteelWheel::Composite::#{SteelWheel::Composite.classify(components_group)}"
+        mod = self.included_modules.detect {|m| m.to_s == mod_name}
+        instance = public_send(mod.__sw_new_instance_method_name__(step))
+        __sw_decorate__(cascade, instance)
         cascade.previous_step = step
       end
     end
@@ -73,7 +76,7 @@ module SteelWheel
               public_send(mod.__sw_cascade_components__).each do |step, base_class|
                 cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
 
-                __sw_handle_step__(cascade, base_class, step)
+                __sw_handle_step__(mod.__sw_cascade_components__, cascade, base_class, step)
               end
               cascade
             end

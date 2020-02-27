@@ -37,7 +37,7 @@ module SteelWheel
       return initial_values if self.in.nil?
       input_class = public_send(:"#{self.in}_input_class")
       return initial_values if input_class.nil?
-      input_class.__sw_init__(input_class, *initial_values)
+      public_send(:"new_#{self.in}_input_instance", *initial_values)
     end
 
     def self.__sw_wrap_output__
@@ -47,7 +47,7 @@ module SteelWheel
       return unless self.respond_to?(:"#{self.out}_output_class")
       output_class = public_send(:"#{self.out}_output_class")
       return if output_class.nil?
-      output_class.__sw_init__(output_class)
+      public_send(:"new_#{self.out}_output_instance")
     end
 
     def self.accept(*values)

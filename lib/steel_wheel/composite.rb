@@ -85,6 +85,10 @@ module SteelWheel
             :"__sw_activate_#{title}_component__"
           end
 
+          def __sw_new_instance_method_name__(title)
+            :"new_#{title}_#{component_name}_instance"
+          end
+
           def __sw_component_class_reader__(title)
             :"#{title}_#{component_name}_class"
           end
@@ -113,6 +117,14 @@ module SteelWheel
             end
           end
 
+          def define_component_new_instance_method(method_name)
+            mod = self
+            define_method mod.__sw_new_instance_method_name__(method_name) do |*args|
+              klass = public_send(mod.__sw_component_class_reader__(method_name))
+              klass.__sw_init__(klass, *args)
+            end
+          end
+
           def define_component_configure_method(method_name)
             mod = self
             define_method :"#{method_name}_#{mod.component_name}" do |klass = nil, init: nil, &block|
@@ -132,6 +144,7 @@ module SteelWheel
               __sw_composite_define_init__(base_class, &init)
               send(:"#{mod.__sw_component_class_reader__(method_name)}=", base_class)
               mod.define_component_configure_method(method_name)
+              mod.define_component_new_instance_method(method_name)
             end
           end
 

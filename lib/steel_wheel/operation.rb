@@ -12,7 +12,7 @@ module SteelWheel
       public_send("#{title}_controller") {}
     end
 
-    def self.__sw_handle_step__(cascade, base_class, component)
+    def self.__sw_handle_step__(components_group, cascade, base_class, component)
       if component.match(/dispatcher/)
         dispatcher = base_class.new
         branch_name = dispatcher.call(cascade.current_object)

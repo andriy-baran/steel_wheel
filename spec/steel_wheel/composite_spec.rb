@@ -11,7 +11,7 @@ RSpec.describe SteelWheel::Composite do
         end
 
         controller :parser
-        controller :formatter
+        controller :formatter, init: ->(klass, **options) { klass.new(options.merge(app: 'RSpec')) }
 
         parser_controller do
           def parse(json)
@@ -20,9 +20,10 @@ RSpec.describe SteelWheel::Composite do
         end
 
         formatter_controller do
-          attr_reader :id
+          attr_reader :id, :app
           def initialize(opts)
             @id = opts[:id]
+            @app = opts[:app]
           end
 
           def call
@@ -31,8 +32,8 @@ RSpec.describe SteelWheel::Composite do
         end
 
         def self.test_instance(json)
-          parser = parser_controller_class.new
-          formatter = formatter_controller_class.new(parser.parse(json))
+          parser = new_parser_controller_instance
+          formatter = new_formatter_controller_instance(parser.parse(json))
           new(formatter)
         end
 
@@ -47,7 +48,16 @@ RSpec.describe SteelWheel::Composite do
   it { expect(operation_class).to respond_to(:controller) }
   it { expect(operation_class).to respond_to(:parser_controller_class) }
   it { expect(operation_class).to respond_to(:formatter_controller_class) }
+  it { expect(operation_class).to respond_to(:new_parser_controller_instance) }
+  it { expect(operation_class).to respond_to(:new_formatter_controller_instance) }
 
+  describe 'components instances' do
+    it 'generates new instances based in init block' do
+      expect(operation_class.new_parser_controller_instance).to be_a operation_class.parser_controller_class
+      expect(operation_class.new_formatter_controller_instance).to be_a operation_class.formatter_controller_class
+      expect(operation_class.new_formatter_controller_instance.app).to eq 'RSpec'
+    end
+  end
 
   describe '#call' do
     it 'when everything is ok' do
