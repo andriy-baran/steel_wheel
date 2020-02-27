@@ -48,6 +48,14 @@ RSpec.describe SteelWheel::Composite do
   it { expect(operation_class).to respond_to(:parser_controller_class) }
   it { expect(operation_class).to respond_to(:formatter_controller_class) }
 
+
+  describe '#call' do
+    it 'when everything is ok' do
+      operation = operation_class.test_instance(value.to_json)
+      expect(operation.call).to eq(value.merge(success: true))
+    end
+  end
+
   describe 'inheritance' do
     vars do
       child_operation_class do
@@ -71,10 +79,49 @@ RSpec.describe SteelWheel::Composite do
     end
   end
 
-  describe '#call' do
-    it 'when everything is ok' do
-      operation = operation_class.test_instance(value.to_json)
-      expect(operation.call).to eq(value.merge(success: true))
+  describe 'double inheritance' do
+    vars do
+      child_operation_class do
+        Class.new(operation_class) do
+          formatter_controller do
+            def call
+              { id: id, child: true }
+            end
+          end
+        end
+      end
+      child_of_child_operation_class do
+        Class.new(child_operation_class)
+      end
+    end
+
+    it { expect(child_of_child_operation_class).to respond_to(:parser_controller_class) }
+    it { expect(child_of_child_operation_class).to respond_to(:formatter_controller_class) }
+
+    it 'overrides components' do
+      operation = child_of_child_operation_class.test_instance(value.to_json)
+      expect(operation.call).to eq(value.merge(child: true))
+      expect(child_of_child_operation_class.included_modules).to include(SteelWheel::Composite::Controller)
+    end
+  end
+
+  describe 'base class overriding' do
+    vars do
+      child_operation_class do
+        Class.new(operation_class) do
+          controller :formatter, base_class: Class.new(OpenStruct) { def format; 'json'; end }
+          def format
+            @formatter.format
+          end
+        end
+      end
+    end
+
+    it 'overrides base class' do
+      operation = child_operation_class.test_instance(value.to_json)
+      expect(operation.format).to eq('json')
+      expect(operation.call).to eq(OpenStruct.new.call)
+      expect(child_operation_class.included_modules).to include(SteelWheel::Composite::Controller)
     end
   end
 end
