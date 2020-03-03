@@ -85,8 +85,8 @@ module SteelWheel
       end
     end
 
-    def self.prepare(cascade = SteelWheel::CascadingState.new(self.in, __sw_wrap_input__))
-      controllers_cascade_decorating(cascade)
+    def self.prepare(previous_step = self.in, current_object = __sw_wrap_input__)
+      cascade = controllers_cascade_decorating(previous_step, current_object)
       __sw_resolve_cascade__(cascade)
     end
 

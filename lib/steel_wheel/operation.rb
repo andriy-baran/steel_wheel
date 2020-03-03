@@ -12,18 +12,17 @@ module SteelWheel
       public_send("#{title}_controller") {}
     end
 
-    def self.__sw_handle_step__(components_group, cascade, base_class, component)
+    def self.__sw_handle_step__(components_group, previous_step, current_object, component, base_class)
       if component.match(/dispatcher/)
         dispatcher = base_class.new
-        branch_name = dispatcher.call(cascade.current_object)
-        cascade.branch = branch_name
+        branch_name = dispatcher.call(current_object)
         branch_class = branches[branch_name]
         branch_class.singleton_class.class_eval do
           def __sw_resolve_cascade__(cascade)
-            new(cascade.current_object)
+            cascade.current_object
           end
         end
-        branch_class.prepare(cascade)
+        branch_class.prepare(previous_step, current_object)
       else
         super
       end

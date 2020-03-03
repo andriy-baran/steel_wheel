@@ -32,23 +32,19 @@ module SteelWheel
         o.class.ancestors.include?(ActiveModel::Validations) && o.invalid?
       end
 
-      def __sw_decorate__(cascade, instance)
-        if cascade.initial_step?
-          cascade.current_object = instance
+      def __sw_decorate__(previous_step, current_object, instance)
+        if previous_step.nil? || current_object.nil?
+          instance
         else
-          cascade.current_object = __sw_wrap__(
-            cascade.current_object,
-            wrapper_object: instance,
-            accessor: cascade.previous_step)
+          __sw_wrap__(current_object, wrapper_object: instance, accessor: previous_step)
         end
       end
 
-      def __sw_handle_step__(components_group, cascade, base_class, step)
+      def __sw_handle_step__(components_group, previous_step, current_object, step, base_class)
         mod_name = "SteelWheel::Composite::#{SteelWheel::Composite.classify(components_group)}"
         mod = self.included_modules.detect {|m| m.to_s == mod_name}
         instance = public_send(mod.__sw_new_instance_method_name__(step))
-        __sw_decorate__(cascade, instance)
-        cascade.previous_step = step
+        __sw_decorate__(previous_step, current_object, instance)
       end
     end
 
@@ -71,14 +67,16 @@ module SteelWheel
 
           def define_cascade_decorating_method
             mod = self
-            define_method(__sw_cascade_method_name__) do |cascade = SteelWheel::CascadingState.new|
-              raise(ArgumentError, "must be a subclass of SteelWheel::CascadingState") unless cascade.class <= SteelWheel::CascadingState
+            define_method(__sw_cascade_method_name__) do |previous_step = nil, current_object = nil|
+              raise(ArgumentError, 'Both arguments required') if previous_step.nil? ^ current_object.nil?
+              error_track = false
               public_send(mod.__sw_cascade_components__).each do |step, base_class|
-                cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
+                error_track = true and break if __sw_invalidate_state__(current_object)
 
-                __sw_handle_step__(mod.__sw_cascade_components__, cascade, base_class, step)
+                current_object = __sw_handle_step__(mod.__sw_cascade_components__, previous_step, current_object, step, base_class)
+                previous_step = step
               end
-              cascade
+              SteelWheel::CascadingState.new(previous_step, current_object, error_track)
             end
           end
         end

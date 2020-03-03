@@ -62,10 +62,7 @@ RSpec.describe SteelWheel::Cascade do
       vars { obj { Object.new } }
 
       it 'decorates current_object of cascade_state' do
-        cascade_state = SteelWheel::CascadingState.new
-        cascade_state.current_object = obj
-        cascade_state.previous_step = :input
-        cascade_state = operation_class.blocks_cascade_decorating(cascade_state)
+        cascade_state = operation_class.blocks_cascade_decorating(:input, obj)
         expect(cascade_state).to be_a(SteelWheel::CascadingState)
         result = cascade_state.current_object
         expect(result.preparator).to_not be_nil
@@ -78,8 +75,8 @@ RSpec.describe SteelWheel::Cascade do
     context 'when invalid cascade_state provided' do
       it 'raises an error' do
         expect {
-          operation_class.blocks_cascade_decorating(Object.new)
-        }.to raise_error(ArgumentError, "must be a subclass of SteelWheel::CascadingState")
+          operation_class.blocks_cascade_decorating(nil, Object.new)
+        }.to raise_error(ArgumentError, 'Both arguments required')
       end
     end
   end

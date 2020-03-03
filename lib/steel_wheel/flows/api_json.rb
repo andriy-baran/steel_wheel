@@ -15,18 +15,22 @@ module SteelWheel
           block_given? ? @errors_format = block : @errors_format ||= ->(text) { { error: 'error', message: text } }
         end
 
-        def controllers_cascade_decorating(cascade, &block)
+        def controllers_cascade_decorating(previous_step, current_object, &block)
+          raise(ArgumentError, 'Both arguments required') if previous_step.nil? ^ current_object.nil?
+          error_track = false
           controllers.each do |controller, base_class|
             __sw_component_inactive_error__(controller).call if base_class.nil?
-            block.call(cascade.current_object) if cascade.previous_step == :context && block_given?
-            cascade.failure and break if __sw_invalidate_state__(cascade.current_object)
+            block.call(current_object) if previous_step == :context && block_given?
+            error_track = true and break if __sw_invalidate_state__(current_object)
 
-            __sw_handle_step__(:controllers, cascade, base_class, controller)
+            current_object = __sw_handle_step__(:controllers, previous_step, current_object, controller, base_class)
+            previous_step = controller
           end
+          SteelWheel::CascadingState.new(previous_step, current_object, error_track)
         end
 
-        def prepare(cascade = SteelWheel::CascadingState.new(self.in, __sw_wrap_input__), &block)
-          controllers_cascade_decorating(cascade, &block)
+        def prepare(previous_step = self.in, current_object = __sw_wrap_input__, &block)
+          cascade = controllers_cascade_decorating(previous_step, current_object, &block)
           __sw_resolve_cascade__(cascade)
         end
       end
