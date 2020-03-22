@@ -1,4 +1,4 @@
-class <%= class_name %>Operation < SteelWheel::Operation
+class <%= class_name %>Operation < ApplicationOperation
   params do
 
   end
