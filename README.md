@@ -1,5 +1,7 @@
 # SteelWheel
 
+Allows to operate on any sequence of procedures as on linked list. It means that inserting and deleting any list/element into/from similar lists is very efficient. And a rich callbacks system gives entire control over the execution. Currently there is one example implemented. It helps organize common procedures in a Rails' controlers.
+
 ## Installation
 
 Add this line to your application's Gemfile:
