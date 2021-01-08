@@ -1,6 +1,8 @@
 module SteelWheel
   class Operation < SteelWheel::Rail
-    include SteelWheel::Composite[:branches]
+    include SteelWheel::Composite
+
+    composed_of :branches
 
     class Result < OpenStruct; end
 
