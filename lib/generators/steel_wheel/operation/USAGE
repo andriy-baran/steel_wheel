@@ -1,8 +1,0 @@
-Description:
-    Generates operations files
-
-Example:
-    rails generate steel_wheel:operation Thing
-
-    This will create:
-        app/operations/thing_operation.rb
