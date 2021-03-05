@@ -1,23 +1,104 @@
 RSpec.describe SteelWheel::Action do
+  DATA = { 'base/1' => true }.freeze
+
   vars do
-    action_class do
+    context_class do
       Class.new(SteelWheel::Action) do
-        def upcased_title
-          'new action'.upcase
+        def initialize(opts)
+          opts.each do |(key, value)|
+            self.class.class_eval{attr_accessor key}
+            instance_variable_set(:"@#{key}", value)
+          end
+        end
+
+        def data
+          DATA[id]
+        end
+
+        memoize def random_object_id
+          OpenStruct.new.object_id
+        end
+
+        validate do
+          errors.add(:base, "Couldn't find DATA with id=#{id}") if data.nil?
         end
       end
     end
-    title { 'new action' }
-    action { action_class.new }
+    id { 'base/1' }
+    context { context_class.new(id: id) }
   end
 
-  it { expect(action).to respond_to(:upcased_title) }
+  it { expect(context_class).to respond_to(:memoize) }
+  it { expect(context).to respond_to(:data) }
+  it { expect(context).to respond_to(:random_object_id) }
 
-  it 'has access to data passed in context object' do
-    expect(action.upcased_title).to eq title.upcase
+  describe '.name' do
+    it 'returns SteelWheel::Action' do
+      expect(context_class.name).to eq 'SteelWheel::Action'
+    end
   end
 
-  it 'raises error when no method defined on context' do
-    expect { action.not_defined_method }.to raise_error(NoMethodError, /undefined method `not_defined_method'/)
+  describe '.error_key' do
+    vars do
+      context { context_class.new(id: 2) }
+    end
+
+    it 'returns first key in errors if there are errors' do
+      context.invalid?
+      expect(context.error_key).to eq :base
+    end
+
+    it 'returns nil if there are no errors' do
+      context = context_class.new(id: 'base/1')
+      context.invalid?
+      expect(context.error_key).to eq nil
+    end
+  end
+
+  it 'is subclass of ActiveModel::Validations' do
+    expect(SteelWheel::Action.ancestors).to include(ActiveModel::Validations)
+  end
+
+  it 'memoize methods' do
+    old_id = context.random_object_id
+    expect(context.random_object_id).to eq old_id
+  end
+
+  context 'error messages' do
+    vars do
+      context_class do
+        Class.new(SteelWheel::Action) do
+          validate { errors.add(:forbidden, 'Error Message') }
+        end
+      end
+    end
+
+    it 'skips :not_found, :forbidden, :unprocessable_entity in full error messages' do
+      ctx = context_class.new.tap(&:valid?)
+      expect(ctx.errors.to_a).to eq ['Error Message']
+      expect(ctx.error_key).to eq :forbidden
+    end
+  end
+
+  context 'when validation passes' do
+    it 'valid? returns true' do
+      expect(context).to be_valid
+    end
+  end
+
+  context 'when validation does not pass' do
+    vars do
+      context { context_class.new(id: 2) }
+      messages { ['Couldn\'t find DATA with id=2'] }
+    end
+
+    it 'invalid? returns true' do
+      expect(context).to be_invalid
+    end
+
+    it 'has errors messages' do
+      context.invalid?
+      expect(context.errors.to_a).to eq messages
+    end
   end
 end

@@ -42,7 +42,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'memery', '~> 1'
   spec.add_dependency 'easy_params', '~> 0.1.0'
-  spec.add_dependency 'flow_object', '~> 0.1.4'
+  spec.add_dependency 'flow_object', '~> 0.2.0'
 
   spec.add_development_dependency 'bundler', '~> 1.17'
   spec.add_development_dependency 'pry', '~> 0.10'
