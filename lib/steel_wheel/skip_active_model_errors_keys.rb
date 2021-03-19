@@ -1,6 +1,6 @@
 module SteelWheel
   module SkipActiveModelErrorsKeys
-    def self.[](*skip_keys)
+    def self.build_module
       mod = Module.new do
         class << self
           attr_accessor :skip_keys
@@ -10,24 +10,30 @@ module SteelWheel
           end
         end
       end
-      mod.skip_keys = skip_keys
-      mod.module_eval do
-        def self.included(klass)
-          mod = self
-          klass.singleton_class.class_eval do
-            alias_method :__new__, :new
+    end
 
-            define_method :new do |*args|
-              __new__(*args).tap do |instance|
-                instance.errors.singleton_class.class_eval do
-                  define_method :full_message do |attribute, message|
-                    return message if mod.skip_keys.include?(attribute)
-                    super(attribute, message)
-                  end
-                end
-              end
-            end
-          end
+    def self.patch_errors_method_on_instance(mod, klass)
+      class << klass
+        alias_method :__new__, :new
+      end
+
+      klass.define_singleton_method :new do |*args|
+        instance = __new__(*args)
+        instance.errors.define_singleton_method :full_message do |attribute, message|
+          return message if mod.skip_keys.include?(attribute)
+          super(attribute, message)
+        end
+        instance
+      end
+    end
+
+    def self.[](*skip_keys)
+      mod = build_module
+      mod.skip_keys = skip_keys
+      builder = self
+      mod.module_eval do
+        define_singleton_method(:included) do |klass|
+          builder.patch_errors_method_on_instance(self, klass)
         end
       end
       mod

@@ -13,7 +13,7 @@ module SteelWheel
 
     skip_validation_keys(:not_found, :forbidden, :unprocessable_entity)
 
-    def error_key
+    def http_status
       errors.keys.first
     end
   end

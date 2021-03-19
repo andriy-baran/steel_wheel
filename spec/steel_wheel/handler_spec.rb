@@ -33,7 +33,7 @@ RSpec.describe SteelWheel::Handler do
     end
     ok_result do
       {
-        errors: nil,
+        errors: [],
         status: :ok
       }
     end
@@ -43,7 +43,7 @@ RSpec.describe SteelWheel::Handler do
           attr_accessor :init_proc
         end
         response_output do
-          def to_h; {status: status, errors: errors}; end
+          def to_h; {status: status, errors: errors.full_messages}; end
         end
         def call
           'Operation result'
@@ -195,7 +195,7 @@ RSpec.describe SteelWheel::Handler do
                       ctx.new_value = 15
                     end
         handler = operation.call
-        expect(handler.given.new_value).to eq 15
+        expect(handler.output.new_value).to eq 15
       end
     end
   end

@@ -1,4 +1,3 @@
 module SteelWheel
-  class Params < EasyParams::Base
-  end
+  class Params < EasyParams::Base; end
 end

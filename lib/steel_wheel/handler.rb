@@ -20,13 +20,13 @@ module SteelWheel
     end
 
     def on_params_failure
-      output.errors = given.errors.full_messages
       output.status = :bad_request
+      output.errors = output.params.errors
     end
 
     def on_action_failure
-      output.errors = given.errors.full_messages_for(given.error_key)
-      output.status = given.error_key
+      output.status = output.action.http_status
+      output.errors = output.action.errors
     end
 
     def on_success

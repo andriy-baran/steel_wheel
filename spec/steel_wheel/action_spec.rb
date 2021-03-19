@@ -2,7 +2,7 @@ RSpec.describe SteelWheel::Action do
   DATA = { 'base/1' => true }.freeze
 
   vars do
-    context_class do
+    action_class do
       Class.new(SteelWheel::Action) do
         def initialize(opts)
           opts.each do |(key, value)|
@@ -25,33 +25,33 @@ RSpec.describe SteelWheel::Action do
       end
     end
     id { 'base/1' }
-    context { context_class.new(id: id) }
+    action { action_class.new(id: id) }
   end
 
-  it { expect(context_class).to respond_to(:memoize) }
-  it { expect(context).to respond_to(:data) }
-  it { expect(context).to respond_to(:random_object_id) }
+  it { expect(action_class).to respond_to(:memoize) }
+  it { expect(action).to respond_to(:data) }
+  it { expect(action).to respond_to(:random_object_id) }
 
   describe '.name' do
     it 'returns SteelWheel::Action' do
-      expect(context_class.name).to eq 'SteelWheel::Action'
+      expect(action_class.name).to eq 'SteelWheel::Action'
     end
   end
 
-  describe '.error_key' do
+  describe '.http_status' do
     vars do
-      context { context_class.new(id: 2) }
+      action { action_class.new(id: 2) }
     end
 
     it 'returns first key in errors if there are errors' do
-      context.invalid?
-      expect(context.error_key).to eq :base
+      action.invalid?
+      expect(action.http_status).to eq :base
     end
 
     it 'returns nil if there are no errors' do
-      context = context_class.new(id: 'base/1')
-      context.invalid?
-      expect(context.error_key).to eq nil
+      action = action_class.new(id: 'base/1')
+      action.invalid?
+      expect(action.http_status).to eq nil
     end
   end
 
@@ -60,13 +60,13 @@ RSpec.describe SteelWheel::Action do
   end
 
   it 'memoize methods' do
-    old_id = context.random_object_id
-    expect(context.random_object_id).to eq old_id
+    old_id = action.random_object_id
+    expect(action.random_object_id).to eq old_id
   end
 
   context 'error messages' do
     vars do
-      context_class do
+      action_class do
         Class.new(SteelWheel::Action) do
           validate { errors.add(:forbidden, 'Error Message') }
         end
@@ -74,31 +74,31 @@ RSpec.describe SteelWheel::Action do
     end
 
     it 'skips :not_found, :forbidden, :unprocessable_entity in full error messages' do
-      ctx = context_class.new.tap(&:valid?)
-      expect(ctx.errors.to_a).to eq ['Error Message']
-      expect(ctx.error_key).to eq :forbidden
+      action = action_class.new.tap(&:valid?)
+      expect(action.errors.to_a).to eq ['Error Message']
+      expect(action.http_status).to eq :forbidden
     end
   end
 
   context 'when validation passes' do
     it 'valid? returns true' do
-      expect(context).to be_valid
+      expect(action).to be_valid
     end
   end
 
   context 'when validation does not pass' do
     vars do
-      context { context_class.new(id: 2) }
+      action { action_class.new(id: 2) }
       messages { ['Couldn\'t find DATA with id=2'] }
     end
 
     it 'invalid? returns true' do
-      expect(context).to be_invalid
+      expect(action).to be_invalid
     end
 
     it 'has errors messages' do
-      context.invalid?
-      expect(context.errors.to_a).to eq messages
+      action.invalid?
+      expect(action.errors.to_a).to eq messages
     end
   end
 end
