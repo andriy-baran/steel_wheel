@@ -1,4 +1,5 @@
 # SteelWheel
+[![Maintainability](https://api.codeclimate.com/v1/badges/a197758aa1cfde54f0e1/maintainability)](https://codeclimate.com/github/andriy-baran/steel_wheel/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/a197758aa1cfde54f0e1/test_coverage)](https://codeclimate.com/github/andriy-baran/steel_wheel/test_coverage)
 
 Allows to operate on any sequence of procedures as on linked list. It means that inserting and deleting any list/element into/from similar lists is very efficient. And a rich callbacks system gives entire control over the execution. Currently there is one example implemented. It helps organize common procedures in a Rails' controlers.
 
