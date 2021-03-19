@@ -28,8 +28,16 @@ jobs:
     steps:
     - name: Install dependencies
       run: bundle install
-    - uses: paambaati/codeclimate-action@v2.2.4
+    - name: Setup Code Climate test-reporter
+      run: |
+        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+        chmod +x ./cc-test-reporter
+        ./cc-test-reporter before-build
+    - name: Build and test with RSpec
       env:
         CC_TEST_REPORTER_ID: 4bb114295e4e80ad0f42b2f30b7611f0459c1cbdc7a74a0fe6fa437a543796d9
-      with:
-        coverageCommand: bundle exec rake
+      run: bundle exec rake
+    - name: Publish code coverage
+      run: |
+        export GIT_BRANCH="master"
+        ./cc-test-reporter after-build -r 4bb114295e4e80ad0f42b2f30b7611f0459c1cbdc7a74a0fe6fa437a543796d9
