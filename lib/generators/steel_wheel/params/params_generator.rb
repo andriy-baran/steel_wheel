@@ -1,14 +1,16 @@
-module SteelWheel
-  class ParamsGenerator < Rails::Generators::NamedBase
-    source_root File.expand_path('../templates', __FILE__)
+require_relative '../generic_generator'
 
-    def copy_files
-      if behavior == :revoke
-        template 'params_template.rb', "app/params/#{file_path}_params.rb"
-      elsif behavior == :invoke
-        empty_directory Pathname.new('app/params').join(*class_path)
-        template 'params_template.rb', "app/params/#{file_path}_params.rb"
-      end
+module SteelWheel
+  class ParamsGenerator < GenericGenerator
+    setup_templates_root('params/templates')
+
+    on_revoke do
+      template 'params_template.rb', "app/params/#{file_path}_params.rb"
+    end
+
+    on_invoke do
+      empty_directory Pathname.new('app/params').join(*class_path)
+      template 'params_template.rb', "app/params/#{file_path}_params.rb"
     end
   end
 end
