@@ -1,6 +1,11 @@
 require 'bundler/setup'
 require 'pry'
 require 'rspec_vars_helper'
+require 'simplecov'
+SimpleCov.start do
+  add_filter '/spec/'
+  add_group 'Lib', 'lib'
+end
 require 'steel_wheel'
 
 RSpec.configure do |config|
