@@ -3,7 +3,7 @@ module SteelWheel
     from :params
     to :response
 
-    input :params, base_class: SteelWheel::Params, init: ->(klass, **value) { klass.new(**value) }
+    input :params, base_class: SteelWheel::Params
     flow do
       stage :action, base_class: SteelWheel::Action
     end
@@ -21,16 +21,18 @@ module SteelWheel
 
     def on_params_failure
       output.status = :bad_request
-      output.errors = output.params.errors
+      output.errors.merge!(output.params.errors)
     end
 
     def on_action_failure
       output.status = output.action.http_status
-      output.errors = output.action.errors
+      output.errors.merge!(output.action.errors)
     end
 
     def on_success
       # NOOP
     end
+
+    alias_method(:flow, :output)
   end
 end

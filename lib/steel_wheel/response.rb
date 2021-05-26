@@ -11,5 +11,9 @@ module SteelWheel
     def success?
       errors.empty?
     end
+
+    def valid?
+      success?
+    end
   end
 end

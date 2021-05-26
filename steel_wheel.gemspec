@@ -36,13 +36,13 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.required_ruby_version = '>= 2.4'
 
-  version_string = ['>= 3.2', '< 6.1']
+  version_string = ['>= 3.2', '< 7']
 
   spec.add_runtime_dependency 'railties', version_string
 
   spec.add_dependency 'memery', '~> 1'
   spec.add_dependency 'easy_params', '~> 0.1.0'
-  spec.add_dependency 'flow_object', '~> 0.2.1'
+  spec.add_dependency 'flow_object', '~> 0.2.3'
 
   spec.add_development_dependency 'bundler', '~> 1.17'
   spec.add_development_dependency 'pry', '~> 0.10'
