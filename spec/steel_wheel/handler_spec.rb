@@ -9,8 +9,8 @@ RSpec.describe SteelWheel::Handler do
         validates :id, presence: { message: "can't be blank" }
       end
     end
-    action_class do
-      Class.new(SteelWheel::Action) do
+    command_class do
+      Class.new(SteelWheel::Command) do
         def call
           true
         end
@@ -25,9 +25,9 @@ RSpec.describe SteelWheel::Handler do
         status: :bad_request
       }
     end
-    invalid_action_result do
+    invalid_command_result do
       {
-        errors: ['Action error'],
+        errors: ['Command error'],
         status: :forbidden
       }
     end
@@ -50,12 +50,12 @@ RSpec.describe SteelWheel::Handler do
         end
       end
     end
-    title { 'new action' }
-    action { OpenStruct.new(title: title) }
+    title { 'new command' }
+    command { OpenStruct.new(title: title) }
   end
 
   it { expect(operation_class).to respond_to(:params_input_class) }
-  it { expect(operation_class).to respond_to(:action_stage_class) }
+  it { expect(operation_class).to respond_to(:command_stage_class) }
 
   describe '.params' do
     context 'when class provided' do
@@ -86,66 +86,66 @@ RSpec.describe SteelWheel::Handler do
     end
   end
 
-  describe '.action' do
+  describe '.command' do
     context 'when class provided' do
       it 'saves it instance variable' do
-        action_class = Class.new(SteelWheel::Action)
-        operation_class.stage(:action, base_class: action_class)
-        expect(operation_class.action_stage_class).to eq action_class
+        command_class = Class.new(SteelWheel::Command)
+        operation_class.stage(:command, base_class: command_class)
+        expect(operation_class.command_stage_class).to eq command_class
       end
     end
 
-    context 'when class provided, but not a subclass of SteelWheel::Action' do
+    context 'when class provided, but not a subclass of SteelWheel::Command' do
       it 'raises ArgumentError' do
-        action_class = Class.new
+        command_class = Class.new
         expect do
-          operation_class.action_stage_class = (action_class)
-        end.to raise_error(ArgumentError, 'must be a subclass of SteelWheel::Action')
+          operation_class.command_stage_class = (command_class)
+        end.to raise_error(ArgumentError, 'must be a subclass of SteelWheel::Command')
       end
     end
 
     context 'when class provided and block provided' do
-      it 'dynamically creates a subclass of SteelWheel::Action and evaluates code block in it' do
-        operation_class.send(:action_stage) do
+      it 'dynamically creates a subclass of SteelWheel::Command and evaluates code block in it' do
+        operation_class.send(:command_stage) do
           def quantity
             1
           end
         end
-        expect(operation_class.action_stage_class.superclass).to eq SteelWheel::Action
-        expect(operation_class.action_stage_class.new.quantity).to eq 1
+        expect(operation_class.command_stage_class.superclass).to eq SteelWheel::Command
+        expect(operation_class.command_stage_class.new.quantity).to eq 1
       end
     end
   end
 
-  context 'when params, context, action provided' do
+  context 'when params, context, command provided' do
     before do
       operation_class.params_input_class = params_class
-      operation_class.action_stage_class = action_class
+      operation_class.command_stage_class = command_class
     end
 
     it 'returns an instance of self' do
-      expect(operation_class.accept({}).call).to be_an_instance_of operation_class
+      expect(operation_class.handle(input: {})).to be_an_instance_of operation_class
     end
 
     context 'when params object is invalid' do
       it 'returns an instance of NoOperation' do
-        operation = operation_class.accept({}).call
+        operation = operation_class.handle(input: {})
         expect(operation).to be_a SteelWheel::Handler
       end
     end
 
-    context 'when action object is invalid' do
+    context 'when command object is invalid' do
       vars do
-        action_class do
-          Class.new(SteelWheel::Action) do
+        command_class do
+          Class.new(SteelWheel::Command) do
             def record; end
-            validate { errors.add(:base, 'Action error') if record.nil? }
+            validate { errors.add(:base, 'Command error') if record.nil? }
           end
         end
       end
 
       it 'returns an instance of NoOperation' do
-        operation = operation_class.accept({id: 1}).call
+        operation = operation_class.handle(input: {id: 1})
         expect(operation).to be_a SteelWheel::Handler
       end
     end
@@ -154,48 +154,47 @@ RSpec.describe SteelWheel::Handler do
   describe '#result' do
     before do
       operation_class.params_input_class = params_class
-      operation_class.action_stage_class = action_class
+      operation_class.command_stage_class = command_class
     end
 
     context 'when params object is invalid' do
       it 'returns correct result' do
-        operation = operation_class.accept({}).call
+        operation = operation_class.handle(input: {})
         expect(operation.output.to_h).to eq invalid_params_result
       end
     end
 
-    context 'when action object is invalid' do
+    context 'when command object is invalid' do
       vars do
-        action_class do
-          Class.new(SteelWheel::Action) do
+        command_class do
+          Class.new(SteelWheel::Command) do
             def record; end
-            validate { errors.add(:forbidden, 'Action error') if record.nil? }
+            validate { errors.add(:forbidden, 'Command error') if record.nil? }
           end
         end
       end
 
       it 'returns correct result' do
-        operation = operation_class.accept({id: 1}).call
-        expect(operation.output.to_h).to eq invalid_action_result
+        operation = operation_class.handle(input: {id: 1})
+        expect(operation.output.to_h).to eq invalid_command_result
       end
     end
 
     context 'when everything is ok' do
       it 'returns correct result' do
-        operation = operation_class.accept({id: 1}).call
+        operation = operation_class.handle(input: {id: 1})
         expect(operation.output.to_h).to eq ok_result
       end
     end
 
     context 'when context is extended' do
       it 'returns correct result' do
-        action_class.class_eval{ attr_accessor :new_value }
-        operation_class.action_stage_class = action_class
-        operation = operation_class.accept({id: 1}) do |ctx|
-                      ctx.new_value = 15
-                    end
-        handler = operation.call
-        expect(handler.output.new_value).to eq 15
+        query_class = Class.new(SteelWheel::Query) { attr_accessor :new_value }
+        operation_class.query_stage_class = query_class
+        result = operation_class.handle(input: {id: 1}) do |ctx|
+                   ctx.new_value = 15
+                 end
+        expect(result.output.new_value).to eq 15
       end
     end
   end

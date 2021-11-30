@@ -3,7 +3,7 @@ class <%= class_name %>Handler < ApplicationHandler
 
   end
 
-  action_stage do
+  command_stage do
     def call
       # NOOP
     end

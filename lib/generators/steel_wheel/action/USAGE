@@ -1,8 +1,0 @@
-Description:
-    Generates actions files
-
-Example:
-    rails generate steel_wheel:action Thing
-
-    This will create:
-        app/actions/thing_action.rb

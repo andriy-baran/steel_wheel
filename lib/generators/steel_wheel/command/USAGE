@@ -1,0 +1,8 @@
+Description:
+    Generates commands files
+
+Example:
+    rails generate steel_wheel:command Thing
+
+    This will create:
+        app/commands/thing_command.rb

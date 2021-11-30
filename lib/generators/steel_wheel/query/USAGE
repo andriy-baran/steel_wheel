@@ -1,0 +1,8 @@
+Description:
+    Generates queries files
+
+Example:
+    rails generate steel_wheel:query Thing
+
+    This will create:
+        app/queries/thing_query.rb

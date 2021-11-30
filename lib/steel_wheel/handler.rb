@@ -5,15 +5,10 @@ module SteelWheel
 
     input :params, base_class: SteelWheel::Params
     flow do
-      stage :action, base_class: SteelWheel::Action
+      stage :query, base_class: SteelWheel::Query
+      stage :command, base_class: SteelWheel::Command
     end
     output :response, base_class: SteelWheel::Response
-
-    def self.accept(*values, &block)
-      @initial_values = values
-      after_flow_initialize(&block)
-      self
-    end
 
     def self.halt_flow?(object, id)
       !object.valid?
@@ -24,13 +19,24 @@ module SteelWheel
       output.errors.merge!(output.params.errors)
     end
 
-    def on_action_failure
-      output.status = output.action.http_status
-      output.errors.merge!(output.action.errors)
+    def on_query_failure
+      output.status = output.query.http_status
+      output.errors.merge!(output.query.errors)
+    end
+
+    def on_command_failure
+      output.status = output.command.http_status
+      output.errors.merge!(output.command.errors)
     end
 
     def on_success
       # NOOP
+    end
+
+    def self.handle(input:, flow: :main, &block)
+      call(input: input, flow: flow) do |callbacks|
+        callbacks.flow_initialized(&block) if block
+      end
     end
 
     alias_method(:flow, :output)
