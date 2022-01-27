@@ -42,7 +42,7 @@ RSpec.describe SteelWheel::Handler do
         class << self
           attr_accessor :init_proc
         end
-        response_output do
+        response do
           def to_h; {status: status, errors: errors.full_messages}; end
         end
         def call

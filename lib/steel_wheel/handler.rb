@@ -40,5 +40,11 @@ module SteelWheel
     end
 
     alias_method(:flow, :output)
+    class << self
+      alias_method :params, :params_input
+      alias_method :query, :query_stage
+      alias_method :command, :command_stage
+      alias_method :response, :response_output
+    end
   end
 end
