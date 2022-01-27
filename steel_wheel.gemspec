@@ -36,7 +36,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.required_ruby_version = '>= 2.4'
 
-  version_string = ['>= 3.2', '< 7']
+  version_string = ['>= 3.2', '< 8']
 
   spec.add_runtime_dependency 'railties', version_string
 
