@@ -1,16 +1,14 @@
-require_relative '../generic_generator'
-
 module SteelWheel
-  class CommandGenerator < GenericGenerator
-    setup_templates_root('command/templates')
+  class CommandGenerator < Rails::Generators::NamedBase
+    source_root File.expand_path('../templates', __FILE__)
 
-    on_revoke do
-      template 'command_template.rb', "app/commands/#{file_path}_command.rb"
-    end
-
-    on_invoke do
-      empty_directory Pathname.new('app/commands').join(*class_path)
-      template 'command_template.rb', "app/commands/#{file_path}_command.rb"
+    def copy_files
+      if behavior == :revoke
+        template 'command_template.rb', "app/commands/#{file_path}_command.rb"
+      elsif behavior == :invoke
+        empty_directory Pathname.new('app/commands').join(*class_path)
+        template 'command_template.rb', "app/commands/#{file_path}_command.rb"
+      end
     end
   end
 end

@@ -1,0 +1,8 @@
+Description:
+    Generates operations files
+
+Example:
+    rails generate steel_wheel:application_handler
+
+    This will create:
+        app/handlers/application_handler.rb

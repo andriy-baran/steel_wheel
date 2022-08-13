@@ -1,9 +1,13 @@
 class <%= class_name %>Handler < ApplicationHandler
-  params_input do
+  params do
 
   end
 
-  command_stage do
+  query do
+
+  end
+
+  command do
     def call
       # NOOP
     end
