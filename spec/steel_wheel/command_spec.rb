@@ -20,7 +20,7 @@ RSpec.describe SteelWheel::Command do
         end
 
         validate do
-          errors.add(:base, "Couldn't find DATA with id=#{id}") if data.nil?
+          errors.add(:base, :not_found, message: "Couldn't find DATA with id=#{id}") if data.nil?
         end
       end
     end
@@ -45,13 +45,13 @@ RSpec.describe SteelWheel::Command do
 
     it 'returns first key in errors if there are errors' do
       command.invalid?
-      expect(command.http_status).to eq :base
+      expect(command.http_status).to eq :not_found
     end
 
     it 'returns nil if there are no errors' do
       command = command_class.new(id: 'base/1')
       command.invalid?
-      expect(command.http_status).to eq nil
+      expect(command.http_status).to eq :ok
     end
   end
 

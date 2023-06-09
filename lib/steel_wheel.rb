@@ -1,6 +1,6 @@
 require 'ostruct'
 require 'easy_params'
-require 'flow_object'
+require 'nina'
 require 'json'
 require 'active_model'
 require 'memery'

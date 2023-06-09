@@ -8,7 +8,10 @@ module SteelWheel
     end
 
     def http_status
-      errors.keys.first
+      return :ok if errors.empty?
+      return errors.keys.first unless defined?(ActiveModel::Error)
+
+      errors.map(&:type).first
     end
 
     def call
