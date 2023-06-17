@@ -4,11 +4,6 @@ source 'https://rubygems.org'
 
 git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 
-source 'http://127.0.0.1:9292/' do
-  gem 'nina'
-  gem 'toritori'
-end
-
 # Specify your gem's dependencies in steel_wheel.gemspec
 gemspec
 

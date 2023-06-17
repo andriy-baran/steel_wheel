@@ -8,12 +8,6 @@ PATH
       railties (>= 3.2, < 8)
 
 GEM
-  remote: http://127.0.0.1:9292/
-  specs:
-    nina (0.1.0)
-    toritori (0.1.0)
-
-GEM
   remote: https://rubygems.org/
   specs:
     actionpack (7.0.5)
@@ -79,6 +73,8 @@ GEM
     method_source (1.0.0)
     mini_portile2 (2.8.2)
     minitest (5.18.0)
+    nina (0.1.0)
+      toritori (= 0.1.0)
     nokogiri (1.15.2)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
@@ -145,6 +141,7 @@ GEM
       simplecov-html (~> 0.10.0)
     simplecov-html (0.10.2)
     thor (1.2.2)
+    toritori (0.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (2.4.2)
@@ -155,7 +152,6 @@ PLATFORMS
 
 DEPENDENCIES
   bundler
-  nina!
   pry (~> 0.10)
   rake (>= 12.3.3)
   rspec (~> 3.0)
@@ -163,7 +159,6 @@ DEPENDENCIES
   rubocop
   simplecov (= 0.17)
   steel_wheel!
-  toritori!
 
 BUNDLED WITH
    2.2.22
