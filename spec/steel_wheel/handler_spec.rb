@@ -1,5 +1,11 @@
 require 'spec_helper'
 
+class ChildParams < SteelWheel::Params
+  attribute :id, integer
+
+  validates :id, presence: { message: "can't be blank" }
+end
+
 RSpec.describe SteelWheel::Handler do
   vars do
     invalid_params_result do
@@ -32,12 +38,12 @@ RSpec.describe SteelWheel::Handler do
 
     handler_class do
       Class.new(SteelWheel::Handler) do
-        main_builder.subclass do
-          query_factory.subclass do
+        define do
+          query do
             attr_accessor :new_value
           end
 
-          response_factory.subclass do
+          response do
             def to_h
               { status: status, errors: errors.full_messages }
             end
@@ -54,14 +60,10 @@ RSpec.describe SteelWheel::Handler do
       vars do
         operation_class do
           Class.new(SteelWheel::Handler) do
-            main_builder.subclass do
-              params_factory.subclass do
-                attribute :id, integer
+            define do
+              params ChildParams
 
-                validates :id, presence: { message: "can't be blank" }
-              end
-
-              response_factory.subclass do
+              response do
                 def to_h
                   { status: status, errors: errors.full_messages }
                 end
@@ -82,7 +84,7 @@ RSpec.describe SteelWheel::Handler do
         operation_class do
           Class.new(handler_class) do
             main_builder.subclass do
-              query_factory.subclass do
+              query do
                 validate { errors.add(:base, :not_found, message: 'Query error') }
               end
             end
@@ -100,8 +102,8 @@ RSpec.describe SteelWheel::Handler do
       vars do
         operation_class do
           Class.new(handler_class) do
-            main_builder.subclass do
-              command_factory.subclass do
+            define do
+              command do
                 validate { errors.add(:base, :forbidden, message: 'Command error') }
               end
             end

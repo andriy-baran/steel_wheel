@@ -12,6 +12,10 @@ module SteelWheel
       factory :response, produces: SteelWheel::Response
     end
 
+    def self.define(flow: :main, &block)
+      builders[flow].subclass(&block)
+    end
+
     def on_params_failure(params)
       self.http_status = params.http_status
       errors.merge!(params.errors)
