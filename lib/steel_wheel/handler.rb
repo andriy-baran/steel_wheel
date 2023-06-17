@@ -34,7 +34,7 @@ module SteelWheel
       errors.merge!(command.errors)
     end
 
-    def on_success
+    def on_success(flow)
       # NOOP
     end
 
@@ -49,10 +49,12 @@ module SteelWheel
         end
         c.command { |o| handler.on_command_failure(o) if o.invalid? }
       end
-      builder.wrap(delegate: true) do |i|
+      flow = builder.wrap(delegate: true) do |i|
         i.params(input)
         i.response(handler)
       end
+      handler.on_success(flow)
+      flow
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end

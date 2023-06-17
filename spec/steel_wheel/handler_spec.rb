@@ -51,6 +51,10 @@ RSpec.describe SteelWheel::Handler do
             end
           end
         end
+
+        def on_success(flow)
+          flow.call
+        end
       end
     end
     title { 'new command' }
@@ -121,6 +125,7 @@ RSpec.describe SteelWheel::Handler do
 
     context 'when everything is ok' do
       it 'returns correct result' do
+        expect_any_instance_of(SteelWheel::Command).to receive(:call)
         operation = handler_class.handle(input: { id: 1 })
         expect(operation.to_h).to eq ok_result
       end
