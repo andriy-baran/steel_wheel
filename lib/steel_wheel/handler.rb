@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module SteelWheel
+  # Base class that defines main flow
   class Handler
     include Nina
     include ActiveModel::Validations
@@ -35,21 +38,22 @@ module SteelWheel
       # NOOP
     end
 
+    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def self.handle(input:, flow: :main, &block)
       handler = new
       builder = builders[flow].with_callbacks do |c|
         c.params { |o| handler.on_params_failure(o) if o.invalid? }
         c.query do |o|
-          block.call(o) if block
+          block&.call(o)
           handler.on_query_failure(o) if o.invalid?
         end
         c.command { |o| handler.on_command_failure(o) if o.invalid? }
-        c.response {}
       end
       builder.wrap(delegate: true) do |i|
         i.params(input)
         i.response(handler)
       end
     end
+    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
 end

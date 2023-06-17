@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 RSpec.describe SteelWheel::Command do
   DATA = { 'base/1' => true }.freeze
 
@@ -6,7 +8,7 @@ RSpec.describe SteelWheel::Command do
       Class.new(SteelWheel::Command) do
         def initialize(opts)
           opts.each do |(key, value)|
-            self.class.class_eval{attr_accessor key}
+            self.class.class_eval { attr_accessor key }
             instance_variable_set(:"@#{key}", value)
           end
         end

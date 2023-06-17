@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module SteelWheel
+  # Base class for responses
   class Response
     attr_accessor :status
 

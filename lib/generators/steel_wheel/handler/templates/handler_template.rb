@@ -1,19 +1,21 @@
 class <%= class_name %>Handler < ApplicationHandler
-  params do
+  define do
+    params do
 
-  end
-
-  query do
-
-  end
-
-  command do
-    def call
-      # NOOP
     end
-  end
 
-  def on_success
-    flow.call
+    query do
+
+    end
+
+    command do
+      def call
+        # NOOP
+      end
+    end
+
+    def on_success(flow)
+      flow.call
+    end
   end
 end

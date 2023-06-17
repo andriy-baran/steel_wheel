@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module SteelWheel
+  # Base class for commands
   class Command
     include Memery
     include ActiveModel::Validations

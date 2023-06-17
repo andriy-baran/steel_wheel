@@ -1,4 +1,7 @@
+# frozen_string_literal: true
+
 module SteelWheel
+  # Base class for queries
   class Query
     include Memery
     include ActiveModel::Validations

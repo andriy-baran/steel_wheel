@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'steel_wheel/version'
@@ -23,7 +25,7 @@ Gem::Specification.new do |spec|
     # spec.metadata['changelog_uri'] = 'TODO: Put your gem's CHANGELOG.md URL here.'
   else
     raise 'RubyGems 2.0 or newer is required to protect against ' \
-      'public gem pushes.'
+          'public gem pushes.'
   end
 
   # Specify which files should be added to the gem when it is released.
@@ -34,13 +36,13 @@ Gem::Specification.new do |spec|
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
-  spec.required_ruby_version = '>= 2.4'
+  spec.required_ruby_version = '>= 2.6'
 
   version_string = ['>= 3.2', '< 8']
 
   spec.add_runtime_dependency 'railties', version_string
 
-  spec.add_dependency 'memery', '~> 1'
   spec.add_dependency 'easy_params', '~> 0.2.1'
+  spec.add_dependency 'memery', '~> 1'
   spec.add_dependency 'nina', '~> 0.1.0'
 end
