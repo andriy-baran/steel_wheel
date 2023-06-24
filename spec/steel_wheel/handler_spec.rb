@@ -123,6 +123,33 @@ RSpec.describe SteelWheel::Handler do
       end
     end
 
+    context 'When all objects are invalid' do
+      vars do
+        operation_class do
+          Class.new(handler_class) do
+            define do
+              params do
+                validate { errors.add(:base, :bad_request, message: 'Params error') }
+              end
+
+              query do
+                validate { errors.add(:base, :not_found, message: 'Query error') }
+              end
+
+              command do
+                validate { errors.add(:base, :forbidden, message: 'Command error') }
+              end
+            end
+          end
+        end
+      end
+
+      it 'returns correct result' do
+        operation = operation_class.handle(input: { id: 1 })
+        expect(operation.to_h).to eq({ status: :bad_request, errors: ['Params error']  })
+      end
+    end
+
     context 'when everything is ok' do
       it 'returns correct result' do
         expect_any_instance_of(SteelWheel::Command).to receive(:call)

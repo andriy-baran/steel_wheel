@@ -24,8 +24,8 @@ module SteelWheel
     end
 
     def on_params_failure(params)
-      self.http_status = params.http_status
-      errors.merge!(params.errors)
+      self.http_status ||= params.http_status
+      errors.merge!(params.errors) if errors.empty?
     end
 
     def on_query_success(query)
@@ -33,8 +33,8 @@ module SteelWheel
     end
 
     def on_query_failure(query)
-      self.http_status = query.http_status
-      errors.merge!(query.errors)
+      self.http_status ||= query.http_status
+      errors.merge!(query.errors) if errors.empty?
     end
 
     def on_command_success(command)
@@ -42,8 +42,38 @@ module SteelWheel
     end
 
     def on_command_failure(command)
-      self.http_status = command.http_status
-      errors.merge!(command.errors)
+      self.http_status ||= command.http_status
+      errors.merge!(command.errors) if errors.empty?
+    end
+
+    def on_params_created(params)
+      return on_params_failure(params) if params.invalid?
+
+      on_params_success(params)
+    end
+
+    def on_query_created(query)
+      return if errors.any?
+      return on_query_failure(query) if query.invalid?
+
+      on_query_success(query)
+    end
+
+    def on_command_created(command)
+      return if errors.any?
+      return on_command_failure(command) if command.invalid?
+
+      on_command_success(command)
+    end
+
+    def on_complete(flow)
+      return on_success(flow) if flow.success?
+
+      on_failure(flow)
+    end
+
+    def on_failure(flow)
+      # NOOP
     end
 
     def on_success(flow)
@@ -55,34 +85,21 @@ module SteelWheel
       handler = new
       builder = builders[flow].with_callbacks do |c|
         c.params do |o|
-          if o.invalid?
-            handler.on_params_failure(o)
-          else
-            handler.on_params_success(o)
-          end
+          handler.on_params_created(o)
         end
         c.query do |o|
           block&.call(o)
-          if o.invalid?
-            handler.on_query_failure(o)
-          else
-            handler.on_query_success(o)
-          end
+          handler.on_query_created(o)
         end
         c.command do |o|
-          if o.invalid?
-            handler.on_command_failure(o)
-          else
-            handler.on_command_success(o)
-          end
+          handler.on_command_created(o)
         end
       end
       flow = builder.wrap(delegate: true) do |i|
         i.params(input)
         i.response(handler)
       end
-      handler.on_success(flow)
-      flow
+      flow.tap { |f| handler.on_complete(f) }
     end
     # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
   end
