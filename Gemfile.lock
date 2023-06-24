@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     steel_wheel (0.5.2)
-      easy_params (~> 0.2.1)
+      easy_params (~> 0.3)
       memery (~> 1)
       nina (~> 0.1.0)
       railties (>= 3.2, < 8)
@@ -56,7 +56,7 @@ GEM
       dry-inflector (~> 1.0)
       dry-logic (~> 1.4)
       zeitwerk (~> 2.6)
-    easy_params (0.2.1)
+    easy_params (0.3.0)
       activemodel (>= 3.2, < 8)
       dry-struct (~> 1.4)
       dry-types (~> 1.5)
@@ -72,7 +72,7 @@ GEM
       ruby2_keywords (~> 0.0.2)
     method_source (1.0.0)
     mini_portile2 (2.8.2)
-    minitest (5.18.0)
+    minitest (5.18.1)
     nina (0.1.0)
       toritori (= 0.1.0)
     nokogiri (1.15.2)
