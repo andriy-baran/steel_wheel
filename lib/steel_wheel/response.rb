@@ -12,7 +12,7 @@ module SteelWheel
         include SteelWheel::SkipActiveModelErrorsKeys[*keys]
       end
 
-      generic_validation_keys(:not_found, :forbidden, :unprocessable_entity)
+      generic_validation_keys(:not_found, :forbidden, :unprocessable_entity, :bad_request, :unauthorized)
     end
 
     def self.name

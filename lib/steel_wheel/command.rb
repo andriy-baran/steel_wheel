@@ -17,7 +17,7 @@ module SteelWheel
       errors.map(&:type).first
     end
 
-    def call
+    def call(*)
       # NOOP
     end
   end
