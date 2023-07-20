@@ -160,10 +160,21 @@ RSpec.describe SteelWheel::Handler do
 
     context 'when context is extended' do
       it 'returns correct result' do
-        result = handler_class.handle(input: { id: 1 }) do |query|
-          query.new_value = 15
+        result = handler_class.handle(input: { id: 1 }) do |i|
+          i.query.new_value = 15
         end
         expect(result.new_value).to eq 15
+      end
+    end
+
+    context 'when callbacks are provided' do
+      it 'returns correct result' do
+        result = handler_class.new do |c|
+          c.query { |o| o.new_value = 15 }
+        end.handle(input: { id: 1 }) do |i|
+          i.query.new_value += 15
+        end
+        expect(result.new_value).to eq 30
       end
     end
   end

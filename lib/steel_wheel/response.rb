@@ -19,9 +19,8 @@ module SteelWheel
       'SteelWheel::Response'
     end
 
-    def initialize(handler = nil)
-      @status = handler.http_status || :ok
-      errors.merge!(handler.errors)
+    def initialize
+      @status = :ok
     end
 
     def success?

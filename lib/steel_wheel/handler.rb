@@ -6,7 +6,7 @@ module SteelWheel
     include Nina
     include ActiveModel::Validations
 
-    attr_accessor :http_status
+    attr_reader :user_defined_callbacks
 
     builder :main do
       factory :params, produces: SteelWheel::Params
@@ -19,57 +19,48 @@ module SteelWheel
       builders[flow].subclass(&block)
     end
 
-    def on_params_success(params)
-      # NOOP
+    # Runs validation on objects
+    class Validator
+      include ActiveModel::Validations
+      attr_accessor :http_status
+
+      def self.run(flow)
+        validator = new
+        [flow.params, flow.query, flow.command].each do |obj|
+          break if validator.errors.any?
+
+          validator.validate(obj)
+        end
+        flow.status = validator.http_status || :ok
+        flow.errors.merge!(validator.errors)
+      end
+
+      def validate(object)
+        return if object.valid?
+
+        self.http_status ||= object.http_status
+        errors.merge!(object.errors) if errors.empty?
+      end
     end
 
-    def on_params_failure(params)
-      self.http_status ||= params.http_status
-      errors.merge!(params.errors) if errors.empty?
-    end
-
-    def on_query_success(query)
-      # NOOP
-    end
-
-    def on_query_failure(query)
-      self.http_status ||= query.http_status
-      errors.merge!(query.errors) if errors.empty?
-    end
-
-    def on_command_success(command)
-      # NOOP
-    end
-
-    def on_command_failure(command)
-      self.http_status ||= command.http_status
-      errors.merge!(command.errors) if errors.empty?
+    def initialize(&callbacks)
+      @user_defined_callbacks = callbacks
     end
 
     def on_params_created(params)
-      return on_params_failure(params) if params.invalid?
-
-      on_params_success(params)
+      # NOOP
     end
 
     def on_query_created(query)
-      return if errors.any?
-      return on_query_failure(query) if query.invalid?
-
-      on_query_success(query)
+      # NOOP
     end
 
     def on_command_created(command)
-      return if errors.any?
-      return on_command_failure(command) if command.invalid?
-
-      on_command_success(command)
+      # NOOP
     end
 
-    def on_complete(flow)
-      return on_success(flow) if flow.success?
-
-      on_failure(flow)
+    def on_response_created(command)
+      # NOOP
     end
 
     def on_failure(flow)
@@ -80,27 +71,33 @@ module SteelWheel
       # NOOP
     end
 
-    # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
     def self.handle(input:, flow: :main, &block)
-      handler = new
-      builder = builders[flow].with_callbacks do |c|
-        c.params do |o|
-          handler.on_params_created(o)
-        end
-        c.query do |o|
-          block&.call(o)
-          handler.on_query_created(o)
-        end
-        c.command do |o|
-          handler.on_command_created(o)
-        end
-      end
-      flow = builder.wrap(delegate: true) do |i|
-        i.params(input)
-        i.response(handler)
-      end
-      flow.tap { |f| handler.on_complete(f) }
+      new.handle(input: input, flow: flow, &block)
     end
-    # rubocop:enable Metrics/AbcSize, Metrics/MethodLength
+
+    def handle(input:, flow: :main, &block)
+      object = configure_builder(flow).wrap(delegate: true) { |i| i.params(input) }
+      yield(object) if block
+      Validator.run(object)
+      object.success? ? on_success(object) : on_failure(object)
+      object
+    end
+
+    private
+
+    def configure_builder(flow)
+      builder = self.class.builders[flow].with_callbacks(&required_callbacks)
+      builder = builder.with_callbacks(&user_defined_callbacks) if user_defined_callbacks
+      builder
+    end
+
+    def required_callbacks
+      lambda do |c|
+        c.params { |o| on_params_created(o) }
+        c.query { |o| on_query_created(o) }
+        c.command { |o| on_command_created(o) }
+        c.response { |o| on_response_created(o) }
+      end
+    end
   end
 end
