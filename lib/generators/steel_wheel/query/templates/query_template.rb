@@ -1,3 +1,5 @@
-class <%= class_name %>Query < SteelWheel::Query
+class <%= class_name %>Handler
+  class Query < SteelWheel::Query
 
+  end
 end

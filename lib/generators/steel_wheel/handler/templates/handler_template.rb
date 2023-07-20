@@ -9,13 +9,13 @@ class <%= class_name %>Handler < ApplicationHandler
     end
 
     command do
-      def call
+      def call(*)
         # NOOP
       end
     end
+  end
 
-    def on_success(flow)
-      flow.call
-    end
+  def on_success(flow)
+    flow.call(flow)
   end
 end

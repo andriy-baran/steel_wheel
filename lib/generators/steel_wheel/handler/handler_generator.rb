@@ -10,7 +10,6 @@ module SteelWheel
       elsif behavior == :invoke
         empty_directory Pathname.new('app/handlers').join(*class_path)
         template 'handler_template.rb', "app/handlers/#{file_path}_handler.rb"
-        Rails::Generators.invoke('steel_wheel:application_handler', [], behavior: behavior)
       end
     end
   end

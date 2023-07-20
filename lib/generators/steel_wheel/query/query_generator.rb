@@ -6,10 +6,10 @@ module SteelWheel
 
     def copy_files
       if behavior == :revoke
-        template 'query_template.rb', "app/queries/#{file_path}_query.rb"
+        template 'query_template.rb', "app/handlers/#{file_path}_handler/query.rb"
       elsif behavior == :invoke
         empty_directory Pathname.new('app/queries').join(*class_path)
-        template 'query_template.rb', "app/queries/#{file_path}_query.rb"
+        template 'query_template.rb', "app/handlers/#{file_path}_handler/query.rb"
       end
     end
   end

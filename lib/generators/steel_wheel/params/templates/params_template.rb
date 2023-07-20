@@ -1,3 +1,5 @@
-class <%= class_name %>Params < SteelWheel::Params
+class <%= class_name %>Handler
+  class Params < SteelWheel::Params
 
+  end
 end

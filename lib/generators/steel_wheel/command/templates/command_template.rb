@@ -1,3 +1,5 @@
-class <%= class_name %>Command < SteelWheel::Command
+class <%= class_name %>Handler
+  class Command < SteelWheel::Command
 
+  end
 end

@@ -6,10 +6,10 @@ module SteelWheel
 
     def copy_files
       if behavior == :revoke
-        template 'params_template.rb', "app/params/#{file_path}_params.rb"
+        template 'params_template.rb', "app/handlers/#{file_path}_handler/params.rb"
       elsif behavior == :invoke
         empty_directory Pathname.new('app/params').join(*class_path)
-        template 'params_template.rb', "app/params/#{file_path}_params.rb"
+        template 'params_template.rb', "app/handlers/#{file_path}_handler/params.rb"
       end
     end
   end
