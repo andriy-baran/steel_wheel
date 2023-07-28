@@ -1,5 +1,5 @@
 class <%= class_name %>Handler
-  class Params < SteelWheel::Params
+  class Params < base_class_for(:params)
 
   end
 end

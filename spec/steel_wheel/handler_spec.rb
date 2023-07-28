@@ -61,6 +61,15 @@ RSpec.describe SteelWheel::Handler do
     command { OpenStruct.new(title: title) }
   end
 
+  describe '.base_class_for' do
+    it 'returns base class of factory for the given flow' do
+      subclass = handler_class.base_class_for(:query, flow: :main)
+      instance = subclass.new
+      expect(instance.new_value).to eq nil
+      expect(instance.class.superclass).to eq SteelWheel::Query
+    end
+  end
+
   describe '#result' do
     context 'when params object is invalid' do
       vars do
@@ -170,7 +179,8 @@ RSpec.describe SteelWheel::Handler do
     context 'when callbacks are provided' do
       it 'returns correct result' do
         result = handler_class.new do |c|
-          c.query { |o| o.new_value = 15 }
+          c.query { |o| o.new_value = 5 }
+          c.query { |o| o.new_value += 10 }
         end.handle(input: { id: 1 }) do |i|
           i.query.new_value += 15
         end

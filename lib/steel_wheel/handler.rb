@@ -59,7 +59,7 @@ module SteelWheel
       # NOOP
     end
 
-    def on_response_created(command)
+    def on_response_created(response)
       # NOOP
     end
 
@@ -69,6 +69,10 @@ module SteelWheel
 
     def on_success(flow)
       # NOOP
+    end
+
+    def self.base_class_for(factory, flow: :main)
+      builders[flow].abstract_factory.factories[factory].base_class
     end
 
     def self.handle(input:, flow: :main, &block)
