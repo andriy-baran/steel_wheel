@@ -53,22 +53,72 @@ As you can see each step has specific tasks and can be implemented as a separate
 
 ### Process
 Let's image the process that connects stages described above
-* Get an input and initialize object for params, run validations, trigger callbacks
-* Initialize object for preparing context and give it an access to previous object, run validation, trigger callbacks
-* Initialize object for performing action and give it an access to previous object, run validation, trigger callbacks
-* Initialize resulting object and give it an access to previous object, run action, copy errors, trigger callbacks
+* Get an input and initialize object for params, trigger callbacks
+* Initialize object for preparing context and give it an access to previous object, trigger callbacks
+* Initialize object for performing action and give it an access to previous object, trigger callbacks
+* Initialize resulting object and give it an access to previous object,
+* Run validations, collect errros, trigger callbacks
 * If everything is ok run action and handle errors that appear during execution time.
-* If we have an error on any stage we stop validating new objects in a queue, just creating them to get instance methods they provide.
+* If we have an error on any stage we stop validating following objects.
 
 ### Callbacks
 
-`on_params_created(params)` calls `invalid?` and triggers `on_params_success(params)` or `on_params_failure(params)` respectively.
+We have two types of callbacks explicit and implicit
 
-`on_query_created(query)` calls `invalid?` and triggers `on_query_success(query)` or `on_query_failure(query)` respectively. But it omits them if there were errors detected on previous stage.
+### Implicit callbacks
 
-`on_command_created(command)` calls `invalid?` and triggers `on_command_success(command)` or `on_command_failure(command)` respectively. But it omits them if there were errors detected on previous stages.
+We define them via handler instance methods
 
-`on_complete(flow)` calls `success?` and triggers `on_success(flow)` or `on_failure(flow)` respectively.
+```ruby
+def on_params_created(params)
+  # NOOP
+end
+
+def on_query_created(query)
+  # NOOP
+end
+
+def on_command_created(command)
+  # NOOP
+end
+
+def on_response_created(command)
+  # NOOP
+end
+
+# After validation callbacks
+
+def on_failure(flow)
+  # NOOP
+end
+
+def on_success(flow)
+  # NOOP
+end
+```
+
+### Explicit callbacks
+
+We define them during instantiation of hanler by providing a block parameter
+
+```ruby
+handler = handler_class.new do |c|
+            c.params { |o| puts o }
+            c.query { |o| puts o }
+            c.command { |o| puts o }
+            c.response { |o| puts o }
+          end
+result =  handler.handle(input: { id: 1 })
+```
+In addition we can manipulate with objects directly via callback of `handle` mathod
+```ruby
+result  = handler_class.handle(input: { id: 1 }) do |c|
+            c.params.id = 12
+            c.query.user = current_user
+            c.command.request_headers = request.headers
+            c.response.prepare_presenter
+          end
+```
 
 ## Installation
 
@@ -99,7 +149,7 @@ Add specific handler
 ```bash
 bin/rails g steel_wheel:handler products/create
 ```
-This will generate `app/handlers/products/create.rb`. And we can customize it
+This will generate `app/handlers/products/create_handler.rb`. And we can customize it
 
 ```ruby
 class Products::CreateHandler < ApplicationHandler
@@ -162,19 +212,21 @@ end
 ```
 Looks too long. Lets move code into separate files.
 ```bash
-bin/rails g steel_wheel:query products/create
+bin/rails g steel_wheel:params products/create
 ```
 Add relative code
 ```ruby
 # Base class also can be refered via
 # ApplicationHandler.main_builder.abstract_factory.params_factory.base_class
-class Products::CreateParams < SteelWheel::Params
-  attribute :title, string
-  attribute :weight, string
-  attribute :price, string
+class Products::CreateHandler
+  class Params < SteelWheel::Params
+    attribute :title, string
+    attribute :weight, string
+    attribute :price, string
 
-  validates :title, :weight, :price, presence: true
-  validates :weight, allow_blank: true, format: { with: /\A[0-9]+\s[g|kg]\z/ }
+    validates :title, :weight, :price, presence: true
+    validates :weight, allow_blank: true, format: { with: /\A[0-9]+\s[g|kg]\z/ }
+  end
 end
 ```
 Than do the same for query
@@ -185,25 +237,27 @@ Add code...
 ```ruby
 # Base class also can be refered via
 # ApplicationHandler.main_builder.abstract_factory.query_factory.base_class
-class Products::CreateQuery < SteelWheel::Query
-  validate :product, :variant
+class Products::CreateHandler
+  class Query < SteelWheel::Query
+    validate :product, :variant
 
-  memoize def new_product
-    Product.new(title: title)
-  end
+    memoize def new_product
+      Product.new(title: title)
+    end
 
-  memoize def new_variant
-    new_product.build_variant(weight: weight, price: price)
-  end
+    memoize def new_variant
+      new_product.build_variant(weight: weight, price: price)
+    end
 
-  private
+    private
 
-  def product
-    errors.add(:unprocessable_entity, new_product.errors.full_messages.join("\n")) if new_product.invalid?
-  end
+    def product
+      errors.add(:unprocessable_entity, new_product.errors.full_messages.join("\n")) if new_product.invalid?
+    end
 
-  def variant
-    errors.add(:unprocessable_entity, new_variant.errors.full_messages.join("\n")) if new_variant.invalid?
+    def variant
+      errors.add(:unprocessable_entity, new_variant.errors.full_messages.join("\n")) if new_variant.invalid?
+    end
   end
 end
 ```
@@ -213,21 +267,23 @@ bin/rails g steel_wheel:command products/create
 ```
 Move code
 ```ruby
-class Manage::Products::CreateCommand < SteelWheel::Command
-  def add_to_stock!
-    ::PointOfSale.find_each do |pos|
-      ::PosProductStock.create!(pos_id: pos.id, product_id: new_product.id, on_hand: 0.0)
+class Products::CreateHandler
+  class Command < SteelWheel::Command
+    def add_to_stock!
+      ::PointOfSale.find_each do |pos|
+        ::PosProductStock.create!(pos_id: pos.id, product_id: new_product.id, on_hand: 0.0)
+      end
     end
-  end
 
-  def call(response)
-    ::ApplicationRecord.transaction do
-      new_product.save!
-      new_variant.save!
-      add_to_stock!
-    rescue => e
-      response.errors.add(:unprocessable_entity, e.message)
-      raise ActiveRecord::Rollback
+    def call(response)
+      ::ApplicationRecord.transaction do
+        new_product.save!
+        new_variant.save!
+        add_to_stock!
+      rescue => e
+        response.errors.add(:unprocessable_entity, e.message)
+        raise ActiveRecord::Rollback
+      end
     end
   end
 end
@@ -237,11 +293,9 @@ Than we can update handler
 # app/handlers/manage/products/create_handler.rb
 class Manage::Products::CreateHandler < ApplicationHandler
   define do
-    params Manage::Products::CreateParams
-
-    query Manage::Products::CreateQuery
-
-    command Manage::Products::CreateCommand
+    params Params
+    query Query
+    command Command
   end
 
   def on_success(flow)
