@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    steel_wheel (0.6.0)
+    steel_wheel (0.6.1)
       easy_params (~> 0.3)
       memery (~> 1)
       nina (~> 0.1.3)
