@@ -72,7 +72,7 @@ module SteelWheel
     end
 
     def self.base_class_for(factory, flow: :main)
-      builders[flow].abstract_factory.factories[factory].base_class
+      builders[flow].abstract_factory.factories[factory].instance_variable_get(:@base_class)
     end
 
     def self.handle(input:, flow: :main, &block)
