@@ -4,7 +4,7 @@ PATH
     steel_wheel (0.6.1)
       easy_params (~> 0.3)
       memery (~> 1)
-      nina (~> 0.1.4)
+      nina (~> 0.1.6)
       railties (>= 3.2, < 8)
 
 GEM
@@ -73,7 +73,7 @@ GEM
     method_source (1.0.0)
     mini_portile2 (2.8.4)
     minitest (5.19.0)
-    nina (0.1.4)
+    nina (0.1.6)
       toritori (= 0.2.1)
     nokogiri (1.15.3)
       mini_portile2 (~> 2.8.2)

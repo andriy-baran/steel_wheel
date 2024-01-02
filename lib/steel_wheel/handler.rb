@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'steel_wheel/handler/validator'
 module SteelWheel
   # Base class that defines main flow
   class Handler
@@ -19,47 +20,23 @@ module SteelWheel
       builders[flow].subclass(&block)
     end
 
-    # Runs validation on objects
-    class Validator
-      include ActiveModel::Validations
-      attr_accessor :http_status
-
-      def self.run(flow)
-        validator = new
-        [flow.params, flow.query, flow.command].each do |obj|
-          break if validator.errors.any?
-
-          validator.validate(obj)
-        end
-        flow.status = validator.http_status || :ok
-        flow.errors.merge!(validator.errors)
-      end
-
-      def validate(object)
-        return if object.valid?
-
-        self.http_status ||= object.http_status
-        errors.merge!(object.errors) if errors.empty?
-      end
-    end
-
     def initialize(&callbacks)
       @user_defined_callbacks = callbacks
     end
 
-    def on_params_created(params)
+    def on_params_created(params, flow_name)
       # NOOP
     end
 
-    def on_query_created(query)
+    def on_query_created(query, flow_name)
       # NOOP
     end
 
-    def on_command_created(command)
+    def on_command_created(command, flow_name)
       # NOOP
     end
 
-    def on_response_created(response)
+    def on_response_created(response, flow_name)
       # NOOP
     end
 
@@ -72,7 +49,7 @@ module SteelWheel
     end
 
     def self.base_class_for(factory, flow: :main)
-      builders[flow].abstract_factory.factories[factory].instance_variable_get(:@base_class)
+      builders[flow].abstract_factory.factories[factory].base_class
     end
 
     def self.handle(input:, flow: :main, &block)
@@ -80,7 +57,9 @@ module SteelWheel
     end
 
     def handle(input:, flow: :main, &block)
-      object = configure_builder(flow).wrap(delegate: true) { |i| i.params(input) }
+      object = configure_builder(flow).wrap(delegate: true) do |i|
+        i.params(input)
+      end
       yield(object) if block
       Validator.run(object)
       object.success? ? on_success(object) : on_failure(object)
@@ -90,18 +69,10 @@ module SteelWheel
     private
 
     def configure_builder(flow)
-      builder = self.class.builders[flow].with_callbacks(&required_callbacks)
+      builder = self.class.builders[flow]
+      builder.add_observer(self)
       builder = builder.with_callbacks(&user_defined_callbacks) if user_defined_callbacks
       builder
-    end
-
-    def required_callbacks
-      lambda do |c|
-        c.params { |o| on_params_created(o) }
-        c.query { |o| on_query_created(o) }
-        c.command { |o| on_command_created(o) }
-        c.response { |o| on_response_created(o) }
-      end
     end
   end
 end
