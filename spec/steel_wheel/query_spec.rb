@@ -31,7 +31,7 @@ RSpec.describe SteelWheel::Query do
     query_class do
       Class.new(SteelWheel::Query) do
         find_one :cart, map: { id: :cart_id, user_id: :user_id }, class_name: 'User::Cart'
-        find_one :product, -> { in_stock }, map: { id: :id }
+        find_one :product, -> { in_stock }, map: { id: :id }, required: true
         find_many :variants, -> { active }, map: { id: :selected_variant_ids, product_id: :id }
       end
     end
@@ -47,9 +47,11 @@ RSpec.describe SteelWheel::Query do
 
     query = query_class.new
     Nina.def_accessor(:params, on: query, to: params, delegate: true)
+    query.valid?
     query.product
     query.product
     query.cart
     query.variants
+    expect(query.errors.full_messages).to eq ["Couldn't find Product with 'id'=1"]
   end
 end
