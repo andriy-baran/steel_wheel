@@ -42,7 +42,7 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency 'railties', version_string
 
-  spec.add_dependency 'easy_params', '~> 0.3'
+  spec.add_dependency 'easy_params', '~> 0.4'
   spec.add_dependency 'memery', '~> 1'
   spec.add_dependency 'nina', '~> 0.1.6'
 end

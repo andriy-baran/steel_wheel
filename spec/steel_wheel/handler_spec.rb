@@ -3,9 +3,7 @@
 require 'spec_helper'
 
 class ChildParams < SteelWheel::Params
-  attribute :id, integer
-
-  validates :id, presence: { message: "can't be blank" }
+  integer :id, presence: { message: "can't be blank" }
 end
 
 RSpec.describe SteelWheel::Handler do
