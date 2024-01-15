@@ -30,6 +30,8 @@ RSpec.describe SteelWheel::Query do
   vars do
     query_class do
       Class.new(SteelWheel::Query) do
+        depends_on :currency_symbol
+
         find_one :cart, map: { id: :cart_id, user_id: :user_id }, class_name: 'User::Cart'
         find_one :product, -> { in_stock }, map: { id: :id }, required: true
         find_many :variants, -> { active }, map: { id: :selected_variant_ids, product_id: :id }
@@ -40,18 +42,23 @@ RSpec.describe SteelWheel::Query do
   it 'has finders' do
     params = OpenStruct.new(id: 1, user_id: 3465, cart_id: 12, selected_variant_ids: [33, 44] )
     expect(Variant).to receive(:active)
-    expect(Product).to receive(:in_stock)
-    expect(Product).to receive(:where).with(id: 1).and_return([])
-    expect(User::Cart).to receive(:where).with(id: 12, user_id: 3465).and_return([])
+    expect(Product).to receive(:in_stock).twice
+    expect(Product).to receive(:where).with(id: 1).and_return([]).twice
+    expect(User::Cart).to receive(:where).with(id: 12, user_id: 3465).and_return([]).twice
     expect(Variant).to receive(:where).with(id: [33, 44], product_id: 1)
 
     query = query_class.new
-    Nina.def_accessor(:params, on: query, to: params, delegate: true)
+    Nina.def_reader(:params, on: query, to: params, delegate: true)
     query.valid?
     query.product
     query.product
     query.cart
     query.variants
+    expect(query.errors.full_messages).to eq ["Currency symbol is missing", "Couldn't find Product with 'id'=1"]
+    query = query_class.new
+    Nina.def_reader(:params, on: query, to: params, delegate: true)
+    query.currency_symbol = :uah
+    query.valid?
     expect(query.errors.full_messages).to eq ["Couldn't find Product with 'id'=1"]
   end
 end

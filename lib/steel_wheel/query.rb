@@ -1,30 +1,18 @@
 # frozen_string_literal: true
 
+require 'steel_wheel/query/lookup'
+require 'steel_wheel/query/dependency_validator'
+
 module SteelWheel
   # Base class for queries
   class Query
     include Memery
     include ActiveModel::Validations
 
-    # Utility class for generation simplest ActiveRecord queries
-    class Lookup
-      def initialize(name, search_attrs, scope = nil, class_name: nil)
-        @search_attrs = search_attrs
-        @relation = (class_name || name.to_s.singularize.camelize).constantize
-        @relation.instance_exec(&scope) if scope
-      end
+    def self.depends_on(*attrs)
+      attr_accessor(*attrs)
 
-      def find_one
-        @relation.where(**@search_attrs).first
-      end
-
-      def find_many
-        @relation.where(**@search_attrs)
-      end
-
-      def default_error_message
-        "Couldn't find #{@relation.name} with #{@search_attrs.map { |k, v| "'#{k}'=#{v}" }.join(', ')}"
-      end
+      validates(*attrs, 'steel_wheel/query/dependency': true)
     end
 
     def self.name
