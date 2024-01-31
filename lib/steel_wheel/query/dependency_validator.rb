@@ -7,7 +7,7 @@ module SteelWheel
       def validate_each(record, attribute, value)
         return if value
 
-        record.errors.add :base, :not_found, message: "#{attribute.to_s.humanize} is missing"
+        record.errors.add :base, :not_found, message: options.fetch(:message, "#{attribute.to_s.humanize} is missing")
       end
     end
   end
