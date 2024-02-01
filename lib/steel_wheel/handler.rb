@@ -59,6 +59,9 @@ module SteelWheel
     def handle(input:, flow: :main, &block)
       object = configure_builder(flow).wrap(delegate: true) do |i|
         i.params(input)
+        i.query
+        i.command
+        i.response
       end
       yield(object) if block
       Validator.run(object)
