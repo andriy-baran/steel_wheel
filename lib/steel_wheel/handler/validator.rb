@@ -10,6 +10,8 @@ module SteelWheel
 
       def self.run(flow)
         validator = new
+        return unless flow.respond_to?(:predecessors)
+
         flow.predecessors.reverse_each do |obj|
           break if validator.errors.any?
 
