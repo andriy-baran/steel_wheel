@@ -40,11 +40,11 @@ module SteelWheel
       # NOOP
     end
 
-    def on_failure(flow)
+    def on_failure(flow, flow_name)
       # NOOP
     end
 
-    def on_success(flow)
+    def on_success(flow, flow_name)
       # NOOP
     end
 
@@ -57,25 +57,31 @@ module SteelWheel
     end
 
     def handle(input:, flow: :main, &block)
-      object = configure_builder(flow).wrap(delegate: true) do |i|
-        i.params(input)
-        i.query
-        i.command
-        i.response
+      object = configure_builder(flow) do |builder|
+        send(:"setup_#{flow}_flow", input, builder)
       end
       yield(object) if block
       Validator.run(object)
-      object.success? ? on_success(object) : on_failure(object)
+      object.success? ? on_success(object, flow) : on_failure(object, flow)
       object
     end
 
     private
 
-    def configure_builder(flow)
+    def setup_main_flow(input, builder)
+      builder.params(input)
+      builder.query
+      builder.command
+      builder.response
+    end
+
+    def configure_builder(flow, &block)
       builder = self.class.builders[flow]
       builder.add_observer(self)
       builder = builder.with_callbacks(&user_defined_callbacks) if user_defined_callbacks
-      builder
+      builder.wrap(delegate: true) do |i|
+        yield i if block
+      end
     end
   end
 end
