@@ -15,7 +15,7 @@ class <%= class_name %>Handler < ApplicationHandler
     end
   end
 
-  def on_success(flow)
-    flow.call(flow)
+  def on_success(flow, name)
+    flow.call(flow, name)
   end
 end

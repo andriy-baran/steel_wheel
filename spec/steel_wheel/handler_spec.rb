@@ -50,8 +50,8 @@ RSpec.describe SteelWheel::Handler do
           end
         end
 
-        def on_success(flow)
-          flow.call
+        def on_success(object, flow)
+          object.call
         end
       end
     end
