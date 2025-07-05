@@ -88,11 +88,11 @@ end
 
 # After validation callbacks
 
-def on_failure(flow)
+def on_validation_failure
   # NOOP
 end
 
-def on_success(flow)
+def on_validation_success
   # NOOP
 end
 ```
@@ -205,8 +205,8 @@ class Products::CreateHandler < ApplicationHandler
     end
   end
 
-  def on_success(flow)
-    flow.call
+  def on_validation_success
+    call
   end
 end
 ```
@@ -298,8 +298,8 @@ class Manage::Products::CreateHandler < ApplicationHandler
     command Command
   end
 
-  def on_success(flow)
-    flow.call(flow)
+  def on_validation_success
+    call
   end
 end
 ```

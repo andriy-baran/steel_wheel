@@ -1,23 +1,19 @@
 class <%= controller_class_name %>::DestroyHandler < ApplicationHandler
-  define do
-    <%- unless attributes.empty? -%>
-    params do
-      integer :id, presence: true
-    end
-
-    <%- end -%>
-    query do
-      finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: id) }, existence: true
-    end
-
-    command do
-      def call(*)
-        <%= singular_table_name %>.destroy
-      end
-    end
+  <%- unless attributes.empty? -%>
+  params do
+    integer :id, presence: true
   end
 
-  def on_success(flow, name)
-    flow.call(flow, name)
+  <%- end -%>
+  query do
+    finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: params.id) }, existence: true
+  end
+
+  def call
+    <%= singular_table_name %>.destroy
+  end
+
+  def on_validation_success
+    call
   end
 end

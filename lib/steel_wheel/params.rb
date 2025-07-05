@@ -3,7 +3,11 @@
 module SteelWheel
   # Base class for params
   class Params < EasyParams::Base
-    def http_status
+    def self.name
+      'SteelWheel::Params'
+    end
+
+    def status
       return :ok if errors.empty?
 
       :bad_request

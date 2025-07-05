@@ -26,21 +26,21 @@ class Variant < AR
   end
 end
 
-RSpec.describe SteelWheel::Query do
+RSpec.describe SteelWheel::Handler do
   vars do
     query_class do
-      Class.new(SteelWheel::Query) do
+      Class.new(SteelWheel::Handler) do
         depends_on :currency_symbol, provided: { message: 'where is my currency?' }
         depends_on :stock, provided: { allow_nil: true }
 
-        finder :cart, -> { User::Cart.where(id: cart_id, user_id: user_id).first }
+        finder :cart, -> { User::Cart.where(id: params.cart_id, user_id: params.user_id).first }
         finder :product,
-               -> { Product.in_stock.where(id: id).first },
+               -> { Product.in_stock.where(id: params.id).first },
                existence: {
                  base: true,
-                 message: -> (o, d) { "Couldn't find Product with 'id'=#{o.id}" }
+                 message: -> (o, d) { "Couldn't find Product with 'id'=#{o.params.id}" }
                }
-        finder :variants, -> { Variant.active.where(id: selected_variant_ids, product_id: id) }
+        finder :variants, -> { Variant.active.where(id: params.selected_variant_ids, product_id: params.id) }
       end
     end
   end
@@ -53,16 +53,14 @@ RSpec.describe SteelWheel::Query do
     expect(User::Cart).to receive(:where).with(id: 12, user_id: 3465).and_return([])
     expect(Variant).to receive(:where).with(id: [33, 44], product_id: 1)
 
-    query = query_class.new
-    Nina.def_reader(:params, on: query, to: params, delegate: true)
+    query = query_class.new(params)
     query.valid?
     query.product
     query.product
     query.cart
     query.variants
     expect(query.errors.full_messages).to eq ['where is my currency?', "Couldn't find Product with 'id'=1"]
-    query = query_class.new
-    Nina.def_reader(:params, on: query, to: params, delegate: true)
+    query = query_class.new(params)
     query.currency_symbol = :uah
     query.valid?
     expect(query.errors.full_messages).to eq ["Couldn't find Product with 'id'=1"]

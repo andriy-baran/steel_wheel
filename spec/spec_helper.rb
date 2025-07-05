@@ -2,6 +2,8 @@ require 'bundler/setup'
 require 'pry'
 require 'rspec_vars_helper'
 require 'simplecov'
+require 'easy_params'
+require 'json'
 SimpleCov.start do
   add_filter '/spec/'
   add_group 'Lib', 'lib'
