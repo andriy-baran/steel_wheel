@@ -2,12 +2,17 @@
 
 module SteelWheel
   class Query
-    # Presence validation for dependencies
+    # Verify validation for objects
     class VerifyValidator < ActiveModel::EachValidator
-      def validate_each(record, _attribute, value)
+      def validate_each(record, attribute, value)
         return if value.nil?
+        return if value.valid?
 
-        record.errors.merge!(value.errors) if value.invalid?
+        value.errors.each do |error|
+          error_key = options[:base] ? :base : attribute
+          message = options.fetch(:message).fetch(error.attribute.to_sym, "#{error.attribute} #{error.message}")
+          record.errors.add(error_key, :unprocessable_entity, message: message)
+        end
       end
     end
   end

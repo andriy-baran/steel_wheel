@@ -6,7 +6,7 @@ class <%= controller_class_name %>::DestroyHandler < ApplicationHandler
 
   <%- end -%>
   query do
-    finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: params.id) }, existence: true
+    finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: params.id) }, validate_existence: true
   end
 
   def call

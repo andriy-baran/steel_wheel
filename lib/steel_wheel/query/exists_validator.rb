@@ -2,7 +2,7 @@
 
 module SteelWheel
   class Query
-    # Presence validation for dependencies
+    # Presence validation for loaders
     class ExistsValidator < ActiveModel::EachValidator
       def validate_each(record, attribute, value)
         return unless value.blank?

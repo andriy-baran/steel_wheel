@@ -6,6 +6,17 @@ class ChildParams < SteelWheel::Params
   integer :id, presence: { message: "can't be blank" }
 end
 
+class Entity
+  include ActiveModel::Validations
+  attr_accessor :id
+
+  def initialize(id = nil)
+    @id = id
+  end
+
+  validates :id, presence: { message: "can't be blank" }
+end
+
 RSpec.describe SteelWheel::Handler do
   vars do
     invalid_params_result do
@@ -26,6 +37,13 @@ RSpec.describe SteelWheel::Handler do
       {
         errors: ['Command error'],
         status: :forbidden
+      }
+    end
+
+    invalid_entity_result do
+      {
+        errors: ['Please provide valid entity id'],
+        status: :unprocessable_entity
       }
     end
 
@@ -65,55 +83,43 @@ RSpec.describe SteelWheel::Handler do
           Class.new(SteelWheel::Handler) do
             params do
               integer :id, presence: { message: "can't be blank" }
+              integer :quantity, presence: true, numericality: { greater_than: 0 }
             end
+
+            def entity
+              Entity.new
+            end
+
+            verify :entity,
+                    valid: {
+                      base: true,
+                      message: {
+                        id: -> (o, d) { "Please provide valid entity id" },
+                        base: true
+                      }
+                    }
 
             def to_h
               { status: http_status, errors: errors.full_messages }
+            end
+
+            def call
+              to_h
             end
           end
         end
       end
 
-      it 'returns correct result' do
-        operation = operation_class.handle(input: {})
+      it 'returns invalid params error' do
+        operation = operation_class.handle
         expect(operation.to_h).to eq invalid_params_result
       end
+
+      it 'returns invalid entity error' do
+        operation = operation_class.handle({ id: 4 })
+        expect(operation.to_h).to eq invalid_entity_result
+      end
     end
-
-    # context 'when query object is invalid' do
-    #   vars do
-    #     operation_class do
-    #       Class.new(handler_class) do
-    #         main_builder.subclass do
-    #           query do
-    #             validate { errors.add(:base, :not_found, message: 'Query error') }
-    #           end
-    #         end
-    #       end
-    #     end
-    #   end
-
-    #   it 'returns correct result' do
-    #     operation = operation_class.handle(input: {})
-    #     expect(operation.to_h).to eq invalid_query_result
-    #   end
-    # end
-
-    # context 'when command object is invalid' do
-    #   vars do
-    #     operation_class do
-    #       Class.new(handler_class) do
-    #         params ChildParams
-    #         validate { errors.add(:base, :forbidden, message: 'Command error') }
-    #       end
-    #     end
-    #   end
-
-    #   it 'returns correct result' do
-    #     operation = operation_class.handle(input: { id: 1 })
-    #     expect(operation.to_h).to eq invalid_command_result
-    #   end
-    # end
 
     context 'When all objects are invalid' do
       vars do
@@ -129,22 +135,21 @@ RSpec.describe SteelWheel::Handler do
       end
 
       it 'returns correct result' do
-        operation = operation_class.handle(input: { id: 1 })
+        operation = operation_class.handle({ id: 1 })
         expect(operation.to_h).to eq({ status: :bad_request, errors: ['Params error']  })
       end
     end
 
     context 'when everything is ok' do
       it 'returns correct result' do
-        # expect_any_instance_of(SteelWheel::Handler).to receive(:call)
-        operation = handler_class.handle(input: { id: 1 })
+        operation = handler_class.handle({ id: 1 })
         expect(operation.to_h).to eq ok_result
       end
     end
 
     context 'when context is extended' do
       it 'returns correct result' do
-        result = handler_class.handle(input: { id: 1 }) do |i|
+        result = handler_class.handle({ id: 1 }) do |i|
           i.new_value = 15
         end
         expect(result.new_value).to eq 15
@@ -153,7 +158,7 @@ RSpec.describe SteelWheel::Handler do
 
     context 'when callbacks are provided' do
       it 'returns correct result' do
-        result = handler_class.handle(input: { id: 1 }) do |i|
+        result = handler_class.handle({ id: 1 }) do |i|
           i.new_value = 15
         end
         expect(result.new_value).to eq 15

@@ -1,4 +1,7 @@
 # frozen_string_literal: true
+
+require 'ostruct'
+
 class AR
   def self.where(*)
     new
@@ -30,15 +33,22 @@ RSpec.describe SteelWheel::Handler do
   vars do
     query_class do
       Class.new(SteelWheel::Handler) do
-        depends_on :currency_symbol, provided: { message: 'where is my currency?' }
-        depends_on :stock, provided: { allow_nil: true }
+        params do
+          integer :id
+          integer :user_id
+          integer :cart_id
+          array :selected_variant_ids, of: :integer
+        end
+
+        depends_on :currency_symbol, validate_provided: { message: 'where is my currency?' }
+        depends_on :stock, validate_provided: { allow_nil: true }
 
         finder :cart, -> { User::Cart.where(id: params.cart_id, user_id: params.user_id).first }
         finder :product,
                -> { Product.in_stock.where(id: params.id).first },
-               existence: {
+               validate_existence: {
                  base: true,
-                 message: -> (o, d) { "Couldn't find Product with 'id'=#{o.params.id}" }
+                 message: -> (object, data) { "Couldn't find Product with 'id'=#{object.params.id}" }
                }
         finder :variants, -> { Variant.active.where(id: params.selected_variant_ids, product_id: params.id) }
       end
@@ -46,14 +56,14 @@ RSpec.describe SteelWheel::Handler do
   end
 
   it 'has finders' do
-    params = OpenStruct.new(id: 1, user_id: 3465, cart_id: 12, selected_variant_ids: [33, 44] )
+    params = { id: 1, user_id: 3465, cart_id: 12, selected_variant_ids: [33, 44] }
     expect(Variant).to receive(:active).and_return(Variant)
     expect(Product).to receive(:in_stock).and_return(Product).twice
     expect(Product).to receive(:where).with(id: 1).and_return([]).twice
     expect(User::Cart).to receive(:where).with(id: 12, user_id: 3465).and_return([])
     expect(Variant).to receive(:where).with(id: [33, 44], product_id: 1)
 
-    query = query_class.new(params)
+    query = query_class.handle(params)
     query.valid?
     query.product
     query.product
