@@ -38,11 +38,10 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
   spec.required_ruby_version = '>= 2.6'
 
-  version_string = ['>= 3.2', '< 8']
+  version_string = ['>= 3.2', '< 8.1']
 
-  spec.add_runtime_dependency 'railties', version_string
+  spec.add_dependency 'railties', version_string
 
-  spec.add_dependency 'easy_params', '~> 0.5'
+  spec.add_dependency 'easy_params', '~> 0.6.1'
   spec.add_dependency 'memery', '~> 1'
-  spec.add_dependency 'nina', '~> 0.2'
 end
