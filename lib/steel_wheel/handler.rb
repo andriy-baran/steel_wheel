@@ -30,7 +30,8 @@ module SteelWheel
       elsif params.is_a?(ActionController::Parameters)
         params = params.to_unsafe_h.deep_symbolize_keys
       end
-      @form_input = self.class.form_definition.scope ? params.delete(self.class.form_definition.scope) : params
+      @form_scope = self.class.form_definition.scope
+      @form_input = @form_scope ? params.delete(@form_scope) : params
       @input = params
       @callbacks = { success: NOOP, failure: NOOP }
     end
@@ -43,7 +44,7 @@ module SteelWheel
       end
 
       def form_definition
-        @form_definition ||= Class.new(EasyForm::Base)
+        @form_definition ||= Class.new(EasyForm::Rails::Base)
       end
 
       def params(klass = nil, &block)
@@ -88,31 +89,11 @@ module SteelWheel
     end
 
     def form_params
-      @form_params ||= self.class.form_definition.params_definition.new(form_input)
+      @form_params ||= self.class.form_definition.params_definition.schema[@form_scope].class.new(form_input)
     end
 
-    # def form_params_definition
-    #   klass = self.class.form_definition.params_definition
-    #   scope = self.class.form_definition.scope
-    #   Class.new(klass) do
-    #     has scope, klass
-    #   end
-    # end
-
     def form
-      model = form_attributes[:model].is_a?(Array) ? form_attributes[:model].last : form_attributes[:model]
-      # if form_params.errors.any? && model
-      #   action = form_attributes.fetch(:action, helpers.polymorphic_path(form_attributes[:model]))
-      #   form_params.define_singleton_method(:persisted?) { model.persisted? }
-      #   form_params.define_singleton_method(:model_name) { model.model_name }
-      #   self.class.form_definition.new(action: action, model: form_params, errors: form_params.errors)
-      # else
-      #   self.class.form_definition.new(**form_attributes, errors: errors)
-      # end
-      if model && form_params.errors.any?
-        model.assign_attributes(form_params.to_h)
-      end
-      self.class.form_definition.new(**form_attributes, errors: errors)
+      @form ||= self.class.form_definition.new(**form_attributes)
     end
 
     def on_preconditions_failure
@@ -129,11 +110,16 @@ module SteelWheel
 
     def handle(&block)
       yield(self) if block
-      validate_preconditions
+      validate_preconditions(:params, :form, :self)
       return unless success?
 
       call
       success? ? success_callback : failure_callback
+    end
+
+    def ask
+      validate_preconditions(:params, :self)
+      success_callback if success?
     end
 
     def success?
@@ -165,16 +151,17 @@ module SteelWheel
       @callbacks[:failure].call(self)
     end
 
-    def validate_preconditions
-      if params.invalid?
+    def validate_preconditions(*steps)
+      if steps.include?(:params) && params.invalid?
         self.http_status = params.status
         errors.merge!(params.errors)
         on_preconditions_failure
-      elsif form_params.invalid?
+      elsif steps.include?(:form) && form_params.invalid?
         self.http_status = :unprocessable_entity
         errors.merge!(form_params.errors)
+        @form = form.with_errors(form_params)
         on_preconditions_failure
-      elsif invalid?
+      elsif steps.include?(:self) && invalid?
         self.http_status = status
         on_preconditions_failure
       end
