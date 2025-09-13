@@ -13,7 +13,7 @@ module SteelWheel
     NOOP = ->(o) { o }.freeze
 
     attr_reader :input, :form_input
-    attr_accessor :http_status
+    attr_accessor :http_status, :helpers
 
     unless defined?(ActiveModel::Error)
       def self.generic_validation_keys(*keys)
@@ -89,7 +89,11 @@ module SteelWheel
     end
 
     def form_params
-      @form_params ||= self.class.form_definition.params_definition.schema[@form_scope].class.new(form_input)
+      @form_params ||= if @form_scope
+                         self.class.form_definition.params_definition.schema[@form_scope].class.new(form_input)
+                       else
+                         self.class.form_definition.params_definition.new(form_input)
+                       end
     end
 
     def form
