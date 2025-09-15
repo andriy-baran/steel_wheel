@@ -82,6 +82,17 @@ module SteelWheel
         memoize name
         validates name, 'steel_wheel/query/exists': validate_existence
       end
+
+      def self.filter(name, &definition)
+        define_method("filter_by_#{name}", &definition)
+      end
+
+      def self.filterable(name)
+        alias_method :"initial_#{name}_scope", name
+        define_method(name) do
+          apply_filters(:"initial_#{name}_scope", form_params.to_h)
+        end
+      end
     end
 
     def params
@@ -108,7 +119,14 @@ module SteelWheel
       # NOOP
     end
 
-    def call
+    def apply_filters(scope, search_params)
+      search_params.each do |key, value|
+        scope = send("filter_by_#{key}", scope, value) if value.present?
+      end
+      scope
+    end
+
+
       raise NotImplementedError, 'Subclass must implement #call'
     end
 
