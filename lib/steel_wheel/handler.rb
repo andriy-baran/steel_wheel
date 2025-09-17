@@ -45,17 +45,17 @@ module SteelWheel
       raise SteelWheel::ActionNotImplementedError, 'Subclass must implement #call'
     end
 
-    def handle(action: :call, &block)
+    def handle(&block)
       yield(self) if block
-      validate_preconditions(:params, :form, :self)
+      validate_preconditions
       return unless success?
 
-      respond_to?(action) ? send(action) : call
+      call
       success? ? success_callback : failure_callback
     end
 
     def prepare
-      validate_preconditions(:params, :self)
+      validate_preconditions
       success_callback if success?
     end
 
@@ -79,7 +79,13 @@ module SteelWheel
                  params.to_unsafe_h.deep_symbolize_keys
                end
       @form_scope = self.class.form_definition.scope
-      @form_input = @form_scope ? params.delete(@form_scope) : params
+      @validate_form = false
+      if @form_scope
+        @form_input = params.delete(@form_scope)
+        @validate_form = @form_input.present?
+      else
+        @form_input = params
+      end
       @input = params
     end
   end

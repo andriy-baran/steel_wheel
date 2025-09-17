@@ -5,12 +5,12 @@ module SteelWheel
   module Preconditions
     private
 
-    def validate_preconditions(*steps)
-      if steps.include?(:params) && params.invalid?
+    def validate_preconditions
+      if params.invalid?
         failure_params
-      elsif steps.include?(:form) && form_params.invalid?
+      elsif @validate_form && form_params.invalid?
         failure_form
-      elsif steps.include?(:self) && invalid?
+      elsif invalid?
         failure_self
       end
     end
