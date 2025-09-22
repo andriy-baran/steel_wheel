@@ -16,4 +16,29 @@ require 'steel_wheel/version'
 module SteelWheel
   class Error < StandardError; end
   class ActionNotImplementedError < Error; end
+  class FilterNotImplementedError < Error
+    def initialize(filter_name)
+      super(<<~HEREDOC)
+        Filter #{filter_name} is not implemented
+
+        Example:
+        filter :#{filter_name} do |scope, value|
+          scope.where(#{filter_name}: value)
+        end
+
+      HEREDOC
+    end
+  end
+  class FormAttributesNotImplementedError < Error
+    def initialize
+      super(<<~HEREDOC)
+        Subclass must implement form_attributes which returns a hash of attributes for the form
+
+        Example:
+        def form_attributes
+          { model: model }
+        end
+      HEREDOC
+    end
+  end
 end

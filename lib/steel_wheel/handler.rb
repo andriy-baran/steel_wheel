@@ -32,12 +32,18 @@ module SteelWheel
     end
 
     class << self
-      def handle(input = {}, action: :call, &block)
-        new(input).handle(action: action, &block)
+      def handle(input = {}, &block)
+        new(input).handle(&block)
       end
 
       def name
         to_s.match?(/Class/) ? 'SteelWheel::Handler' : to_s
+      end
+
+      def inherited(subclass)
+        super
+        subclass.params(params_definition)
+        subclass.form(form_definition)
       end
     end
 
@@ -50,7 +56,7 @@ module SteelWheel
       validate_preconditions
       return unless success?
 
-      call
+      call if @validate_form
       success? ? success_callback : failure_callback
     end
 
@@ -60,7 +66,7 @@ module SteelWheel
     end
 
     def success?
-      errors.empty?
+      http_status == :ok
     end
 
     def status

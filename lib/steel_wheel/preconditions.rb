@@ -23,13 +23,13 @@ module SteelWheel
 
     def failure_form
       self.http_status = :unprocessable_entity
-      errors.merge!(form_params.errors)
       @form = form.with_errors(form_params)
       failure_callback
     end
 
     def failure_self
       self.http_status = status
+      errors.delete(@form_scope)
       failure_callback
     end
   end

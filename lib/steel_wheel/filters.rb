@@ -24,7 +24,10 @@ module SteelWheel
     module InstanceMethods # rubocop:disable Style/Documentation
       def apply_filters(scope, search_params)
         search_params.each do |key, value|
-          scope = send("filter_by_#{key}", scope, value) if value.present?
+          filter_method = "filter_by_#{key}"
+          raise SteelWheel::FilterNotImplementedError, key unless respond_to?(filter_method)
+
+          scope = send(filter_method, scope, value) if value.present?
         end
         scope
       end

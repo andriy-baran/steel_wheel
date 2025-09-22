@@ -10,7 +10,10 @@ module SteelWheel
 
         value.errors.each do |error|
           error_key = options[:base] ? :base : attribute
-          message = options.fetch(:message).fetch(error.attribute.to_sym, "#{error.attribute} #{error.message}")
+          message = "#{error.attribute} #{error.message}"
+          if options[:message]
+            message = options.fetch(:message).fetch(error.attribute.to_sym, "#{error.attribute} #{error.message}")
+          end
           record.errors.add(error_key, :unprocessable_entity, message: message)
         end
       end

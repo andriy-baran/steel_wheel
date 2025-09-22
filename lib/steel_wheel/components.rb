@@ -45,6 +45,10 @@ module SteelWheel
       def form
         @form ||= self.class.form_definition.new(**form_attributes)
       end
+
+      def form_attributes
+        raise SteelWheel::FormAttributesNotImplementedError
+      end
     end
   end
 end
