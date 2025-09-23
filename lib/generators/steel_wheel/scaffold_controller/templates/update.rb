@@ -1,11 +1,11 @@
 class <%= controller_class_name %>::UpdateHandler < ApplicationHandler
   form <%= controller_class_name %>::ModelForm
 
-  params do
+  url_params do
     integer :id, presence: true
   end
 
-  finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: params.id) }, validate_existence: true
+  finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: url_params.id) }, validate_existence: true
 
   def call
     <%= singular_table_name %>.update(form_params.to_h)
