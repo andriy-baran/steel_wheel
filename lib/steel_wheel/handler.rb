@@ -42,7 +42,7 @@ module SteelWheel
 
       def inherited(subclass)
         super
-        subclass.params(params_definition)
+        subclass.url_params(url_params_definition)
         subclass.form(form_definition)
       end
     end

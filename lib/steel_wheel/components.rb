@@ -6,21 +6,21 @@ module SteelWheel
     def self.included(base)
       base.extend(ClassMethods)
       base.include(InstanceMethods)
-      base.singleton_class.attr_writer :params_definition, :form_definition
+      base.singleton_class.attr_writer :url_params_definition, :form_definition
     end
 
     module ClassMethods # rubocop:disable Style/Documentation
-      def params_definition
-        @params_definition ||= Class.new(SteelWheel::Params)
+      def url_params_definition
+        @url_params_definition ||= Class.new(SteelWheel::Params)
       end
 
       def form_definition
         @form_definition ||= Class.new(EasyForm::Rails::Base)
       end
 
-      def params(klass = nil, &block)
-        self.params_definition = klass if klass
-        params_definition.class_exec(self, &block) if block
+      def url_params(klass = nil, &block)
+        self.url_params_definition = klass if klass
+        url_params_definition.class_exec(self, &block) if block
       end
 
       def form(klass = nil, &block)
@@ -30,8 +30,8 @@ module SteelWheel
     end
 
     module InstanceMethods # rubocop:disable Style/Documentation
-      def params
-        @params ||= self.class.params_definition.new(input)
+      def url_params
+        @url_params ||= self.class.url_params_definition.new(input)
       end
 
       def form_params
@@ -42,8 +42,8 @@ module SteelWheel
                          end
       end
 
-      def form
-        @form ||= self.class.form_definition.new(**form_attributes)
+      def form(attrs = form_attributes)
+        @form ||= self.class.form_definition.new(**attrs)
       end
 
       def form_attributes

@@ -6,7 +6,7 @@ module SteelWheel
     private
 
     def validate_preconditions
-      if params.invalid?
+      if url_params.invalid?
         failure_params
       elsif @validate_form && form_params.invalid?
         failure_form
@@ -16,8 +16,8 @@ module SteelWheel
     end
 
     def failure_params
-      self.http_status = params.status
-      errors.merge!(params.errors)
+      self.http_status = url_params.status
+      errors.merge!(url_params.errors)
       failure_callback
     end
 
