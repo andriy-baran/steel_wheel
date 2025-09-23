@@ -32,8 +32,8 @@ module SteelWheel
     end
 
     class << self
-      def handle(input = {}, &block)
-        new(input).handle(&block)
+      def handle(action_name = nil, input = {}, &block)
+        new(input).handle(action_name, &block)
       end
 
       def name
@@ -51,18 +51,14 @@ module SteelWheel
       raise SteelWheel::ActionNotImplementedError, 'Subclass must implement #call'
     end
 
-    def handle(&block)
+    def handle(action_name = nil, &block)
       yield(self) if block
       validate_preconditions
       return unless success?
+      return unless action_name
 
-      call if @validate_form
+      send(action_name)
       success? ? success_callback : failure_callback
-    end
-
-    def prepare
-      validate_preconditions
-      success_callback if success?
     end
 
     def success?
