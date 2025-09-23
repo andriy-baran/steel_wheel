@@ -19,12 +19,12 @@ module SteelWheel
       end
 
       def url_params(klass = nil, &block)
-        self.url_params_definition = klass if klass
+        self.url_params_definition = Class.new(klass) if klass
         url_params_definition.class_exec(self, &block) if block
       end
 
       def form(klass = nil, &block)
-        self.form_definition = klass if klass
+        self.form_definition = Class.new(klass) if klass
         form_definition.class_eval(&block) if block
       end
     end
