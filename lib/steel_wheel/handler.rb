@@ -58,7 +58,7 @@ module SteelWheel
       return unless action_name
 
       send(action_name)
-      success? ? success_callback : failure_callback
+      errors.empty? ? success_callback : failure_self
     end
 
     def success?
