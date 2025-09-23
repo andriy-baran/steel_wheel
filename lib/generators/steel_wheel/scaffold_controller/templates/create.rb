@@ -1,23 +1,15 @@
 class <%= controller_class_name %>::CreateHandler < ApplicationHandler
-  <%- unless attributes.empty? -%>
-  params do
-    has :<%= singular_table_name %> do
-      <%- simple_params.each do |attribute| -%>
-      <%= convert_to_easy_params_type(attribute) %> :<%= attribute.column_name %>, presence: true
-      <%- end -%>
-    end
+  form <%= controller_class_name %>::ModelForm
+
+  memoize def <%= singular_table_name %>
+    <%= class_name %>.new(form_params.to_h)
   end
 
-  <%- end -%>
-  def <%= singular_table_name %>
-    <%= orm_class.build(class_name, "params.#{singular_table_name}.to_h") %>
+  def form_attributes
+    { model: <%= singular_table_name %> }
   end
 
   def call
     <%= singular_table_name %>.save
-  end
-
-  def on_validation_success
-    call
   end
 end

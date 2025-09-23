@@ -33,20 +33,16 @@ module SteelWheel
         if behavior == :revoke
           template 'index.rb', "app/handlers/#{controller_file_name}/index_handler.rb"
           template 'create.rb', "app/handlers/#{controller_file_name}/create_handler.rb"
-          template 'destroy.rb', "app/handlers/#{controller_file_name}/destroy_handler.rb"
-          template 'edit.rb', "app/handlers/#{controller_file_name}/edit_handler.rb"
-          template 'show.rb', "app/handlers/#{controller_file_name}/show_handler.rb"
           template 'update.rb', "app/handlers/#{controller_file_name}/update_handler.rb"
-          template 'new.rb', "app/handlers/#{controller_file_name}/new_handler.rb"
+          template 'model_form.rb', "app/handlers/#{controller_file_name}/model_form.rb"
+          template 'search_form.rb', "app/handlers/#{controller_file_name}/search_form.rb"
         elsif behavior == :invoke
           empty_directory Pathname.new('app/handlers').join(controller_file_name)
           template 'index.rb', "app/handlers/#{controller_file_name}/index_handler.rb"
           template 'create.rb', "app/handlers/#{controller_file_name}/create_handler.rb"
-          template 'destroy.rb', "app/handlers/#{controller_file_name}/destroy_handler.rb"
-          template 'edit.rb', "app/handlers/#{controller_file_name}/edit_handler.rb"
-          template 'show.rb', "app/handlers/#{controller_file_name}/show_handler.rb"
           template 'update.rb', "app/handlers/#{controller_file_name}/update_handler.rb"
-          template 'new.rb', "app/handlers/#{controller_file_name}/new_handler.rb"
+          template 'model_form.rb', "app/handlers/#{controller_file_name}/model_form.rb"
+          template 'search_form.rb', "app/handlers/#{controller_file_name}/search_form.rb"
         end
       end
 

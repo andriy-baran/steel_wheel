@@ -1,68 +1,57 @@
-<% module_namespacing do -%>
-  class <%= controller_class_name %>Controller < ApplicationController
-    # GET <%= route_url %>
-    def index
-      @context = <%= controller_class_name %>::IndexHandler.handle(input: params)
-    end
+class <%= controller_class_name %>Controller < ApplicationController
+  before_action :authenticate_account!
 
-    # GET <%= route_url %>/1
-    def show
-      @context = <%= controller_class_name %>::ShowHandler.handle(input: params)
-    end
-
-    # GET <%= route_url %>/new
-    def new
-      @context = <%= controller_class_name %>::NewHandler.handle(input: params)
-      @errors = @context.errors
-    end
-
-    # GET <%= route_url %>/1/edit
-    def edit
-      @context = <%= controller_class_name %>::EditHandler.handle(input: params)
-      @errors = @context.errors
-    end
-
-    # POST <%= route_url %>
-    def create
-      @context = <%= controller_class_name %>::CreateHandler.handle(input: params)
-      if @context.success?
-        redirect_to @context.<%= singular_table_name %>, notice: <%= %("#{human_name} was successfully created.") %>
-      else
-        @errors = @context.errors
-        render :new, status: :unprocessable_entity
-      end
-    end
-
-    # PATCH/PUT <%= route_url %>/1
-    def update
-      @context = <%= controller_class_name %>::UpdateHandler.handle(input: params)
-      if @context.success?
-        redirect_to @context.<%= singular_table_name %> notice: <%= %("#{human_name} was successfully created.") %>
-      else
-        @errors = @context.errors
-        render :edit, status: :unprocessable_entity
-      end
-    end
-
-    # DELETE <%= route_url %>/1
-    def destroy
-      <%= controller_class_name %>::DestroyHandler.handle(input: params)
-      redirect_to <%= index_helper %>_path, notice: <%= %("#{human_name} was successfully destroyed.") %>, status: :see_other
-    end
-
-    private
-      # Use callbacks to share common setup or constraints between actions.
-      def set_<%= singular_table_name %>
-        @<%= singular_table_name %> = <%= orm_class.find(class_name, "params[:id]") %>
-      end
-
-      # Only allow a list of trusted parameters through.
-      def <%= "#{singular_table_name}_params" %>
-        <%- if attributes_names.empty? -%>
-        params.fetch(:<%= singular_table_name %>, {})
-        <%- else -%>
-        params.require(:<%= singular_table_name %>).permit(<%= permitted_params %>)
-        <%- end -%>
-      end
+  # GET <%= route_url %>
+  action :index do |handler|
+    @<%= plural_table_name %> = handler.<%= plural_table_name %>
+    @form = handler.form
   end
-  <% end -%>
+
+  # GET <%= route_url %>/1
+  action :show, handler: :update do |handler|
+    @<%= singular_table_name %> = handler.<%= singular_table_name %>
+  end
+
+  # GET <%= route_url %>/new
+  action :new, handler: :create do |handler|
+    @<%= singular_table_name %> = handler.<%= singular_table_name %>
+    @form = handler.form
+  end
+
+  # GET <%= route_url %>/1/edit
+  action :edit, handler: :update do |handler|
+    @<%= singular_table_name %> = handler.<%= singular_table_name %>
+    @form = handler.form
+  end
+
+  # POST <%= route_url %>
+  action :create, act: :call do |handler|
+    handler.success do
+      redirect_to handler.<%= singular_table_name %>, notice: '<%= human_name %> was successfully created.'
+    end
+
+    handler.failure do
+      @<%= singular_table_name %> = handler.<%= singular_table_name %>
+      @form = handler.form
+      render :new
+    end
+  end
+
+  # PATCH/PUT <%= route_url %>/1
+  action :update, act: :call do |handler|
+    handler.success do
+      redirect_to handler.<%= singular_table_name %>, notice: '<%= human_name %> was successfully updated.'
+    end
+
+    handler.failure do
+      @form = handler.form
+      @<%= singular_table_name %> = handler.<%= singular_table_name %>
+      render :edit
+    end
+  end
+
+  # DELETE <%= route_url %>/1
+  action :destroy, handler: :update, act: :destroy do |handler|
+    redirect_to <%= index_helper %>_url, notice: '<%= human_name %> was successfully destroyed.'
+  end
+end

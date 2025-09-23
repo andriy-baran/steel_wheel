@@ -8,10 +8,7 @@ Example:
         app/controllers/things_controller.rb
         app/handlers/things/index_handler.rb
         app/handlers/things/create_handler.rb
-        app/handlers/things/destroy_handler.rb
-        app/handlers/things/edit_handler.rb
-        app/handlers/things/show_handler.rb
         app/handlers/things/update_handler.rb
-        app/handlers/things/new_handler.rb
+        app/handlers/things/model_form.rb
 
     The generated handlers will include appropriate params definitions based on the provided attributes.

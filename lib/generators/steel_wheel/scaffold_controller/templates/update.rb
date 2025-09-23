@@ -1,23 +1,22 @@
 class <%= controller_class_name %>::UpdateHandler < ApplicationHandler
+  form <%= controller_class_name %>::ModelForm
+
   params do
     integer :id, presence: true
-    <%- unless attributes.empty? -%>
-    has :<%= singular_table_name %> do
-      <%- simple_params.each do |attribute| -%>
-      <%= convert_to_easy_params_type(attribute) %> :<%= attribute.column_name %>
-      <%- end -%>
-    end
-    <%- end -%>
   end
 
-  finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: params.id) }, existence: true
+  finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: params.id) }, validate_existence: true
 
   def call
-    <%= singular_table_name %>.update!(params.<%= singular_table_name %>.to_h)
+    <%= singular_table_name %>.update(form_params.to_h)
   end
 
-  def on_validation_success
-    call
+  def destroy
+    <%= singular_table_name %>.destroy
+  end
+
+  def form_attributes
+    { model: <%= singular_table_name %> }
   end
 end
 
