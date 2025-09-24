@@ -9,8 +9,12 @@ module SteelWheel
       @callbacks ||= {}
     end
 
-    def failure(status = :unprocessable_entity, &block)
-      callbacks[status] = block
+    def failure(*statuses, &block)
+      return callbacks[:unprocessable_entity] = block if statuses.empty?
+
+      statuses.each do |status|
+        callbacks[status] = block
+      end
     end
 
     def success(&block)
