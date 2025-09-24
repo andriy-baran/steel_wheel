@@ -11,12 +11,14 @@ require 'steel_wheel/callbacks'
 require 'steel_wheel/components'
 require 'steel_wheel/shortcuts'
 require 'steel_wheel/handler'
+require 'steel_wheel/railtie'
 require 'steel_wheel/version'
 
 module SteelWheel
   class Error < StandardError; end
   class ActionNotImplementedError < Error; end
-  class FilterNotImplementedError < Error
+
+  class FilterNotImplementedError < Error # rubocop:disable Style/Documentation
     def initialize(filter_name)
       super(<<~HEREDOC)
         Filter #{filter_name} is not implemented
@@ -29,7 +31,8 @@ module SteelWheel
       HEREDOC
     end
   end
-  class FormAttributesNotImplementedError < Error
+
+  class FormAttributesNotImplementedError < Error # rubocop:disable Style/Documentation
     def initialize
       super(<<~HEREDOC)
         Subclass must implement form_attributes which returns a hash of attributes for the form
