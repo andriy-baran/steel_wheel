@@ -2,12 +2,13 @@ require 'bundler/setup'
 require 'pry'
 require 'rspec_vars_helper'
 require 'simplecov'
-require 'easy_params'
+require "simplecov_json_formatter"
 require 'json'
 SimpleCov.start do
   add_filter '/spec/'
-  add_group 'Lib', 'lib'
+  formatter SimpleCov::Formatter::JSONFormatter
 end
+require 'easy_params'
 require 'steel_wheel'
 
 RSpec.configure do |config|

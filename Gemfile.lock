@@ -167,11 +167,12 @@ GEM
       prism (~> 1.4)
     ruby-progressbar (1.13.0)
     securerandom (0.4.1)
-    simplecov (0.17.0)
+    simplecov (0.22.0)
       docile (~> 1.1)
-      json (>= 1.8, < 3)
-      simplecov-html (~> 0.10.0)
-    simplecov-html (0.10.2)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.13.2)
+    simplecov_json_formatter (0.1.4)
     stringio (3.1.7)
     thor (1.4.0)
     tsort (0.2.0)
@@ -196,7 +197,8 @@ DEPENDENCIES
   rspec (~> 3.0)
   rspec_vars_helper (~> 0.1)
   rubocop
-  simplecov (= 0.17)
+  simplecov (~> 0.22)
+  simplecov_json_formatter
   steel_wheel!
 
 BUNDLED WITH
