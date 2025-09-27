@@ -58,7 +58,7 @@ RSpec.describe SteelWheel::Handler do
       Class.new(SteelWheel::Handler) do
         attr_accessor :new_value
 
-        params ChildParams
+        url_params ChildParams
 
         def to_h
           { status: http_status, errors: errors.full_messages }
@@ -81,7 +81,7 @@ RSpec.describe SteelWheel::Handler do
       vars do
         operation_class do
           Class.new(SteelWheel::Handler) do
-            params do
+            url_params do
               integer :id, presence: { message: "can't be blank" }
               integer :quantity, presence: true, numericality: { greater_than: 0 }
             end
@@ -125,7 +125,7 @@ RSpec.describe SteelWheel::Handler do
       vars do
         operation_class do
           Class.new(handler_class) do
-            params do
+            url_params do
               validate { errors.add(:base, :bad_request, message: 'Params error') }
             end
             validate { errors.add(:base, :not_found, message: 'Query error') }

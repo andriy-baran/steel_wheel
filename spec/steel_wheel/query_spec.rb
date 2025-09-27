@@ -33,7 +33,7 @@ RSpec.describe SteelWheel::Handler do
   vars do
     query_class do
       Class.new(SteelWheel::Handler) do
-        params do
+        url_params do
           integer :id
           integer :user_id
           integer :cart_id
@@ -45,7 +45,7 @@ RSpec.describe SteelWheel::Handler do
 
         finder :cart, -> { User::Cart.where(id: params.cart_id, user_id: params.user_id).first }
         finder :product,
-               -> { Product.in_stock.where(id: params.id).first },
+               -> { Product.in_stock.where(id: url_params.id).first },
                validate_existence: {
                  base: true,
                  message: -> (object, data) { "Couldn't find Product with 'id'=#{object.params.id}" }
