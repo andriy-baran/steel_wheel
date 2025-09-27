@@ -1,5 +1,5 @@
 module <%= controller_class_name %>
-  class SearchForm < EasyForm::Base
+  class SearchForm < ActionForm::Base
     <%- simple_params.each do |attribute| -%>
     element :<%= attribute.column_name %> do
       <%- if attribute.type == :boolean -%>

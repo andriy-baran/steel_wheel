@@ -3,6 +3,7 @@
 require 'easy_params'
 require 'active_model'
 require 'memery'
+require 'action_form'
 require 'steel_wheel/skip_active_model_errors_keys'
 require 'steel_wheel/params'
 require 'steel_wheel/filters'

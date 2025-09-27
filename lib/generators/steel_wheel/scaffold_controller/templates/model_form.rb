@@ -1,5 +1,5 @@
 module <%= controller_class_name %>
-  class ModelForm < EasyForm::Rails::Base
+  class ModelForm < ActionForm::Rails::Base
     resource_model <%= class_name %>
 
     <%- simple_params.each do |attribute| -%>

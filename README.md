@@ -13,7 +13,7 @@ SteelWheel provides a robust framework for creating service objects (handlers) t
 
 - **Handlers**: Service objects that encapsulate business logic with built-in validation and error handling
 - **Parameters**: Type-safe parameter validation using EasyParams
-- **Forms**: Integration with EasyForm::Rails::Base for form handling and validation
+- **Forms**: Integration with [ActionForm::Rails::Base](https://github.com/andriy-baran/action_form) for form handling and validation
 - **Filters**: Query filtering capabilities for data operations
 - **Callbacks**: Success and failure callback mechanisms
 - **Preconditions**: Multi-level validation (URL params, form params, handler validation)
@@ -24,7 +24,7 @@ SteelWheel provides a robust framework for creating service objects (handlers) t
 - **Structured Validation**: Multi-level validation with proper HTTP status codes
 - **Filtering System**: Built-in query filtering with custom filter definitions
 - **Callback System**: Success and failure callbacks with status-specific handling
-- **Form Integration**: Seamless integration with EasyForm::Rails::Base for form handling
+- **Form Integration**: Seamless integration with [ActionForm::Rails::Base](https://github.com/andriy-baran/action_form) for form handling
 - **Generator Support**: Rails generators for rapid development
 - **HTTP Status Management**: Automatic HTTP status code handling for different error types
 
@@ -134,7 +134,7 @@ end
 SteelWheel's filtering system provides automatic query filtering based on form parameters.
 
 To implement filtering, you need to:
-1. Define a search form that inherits from `EasyForm::Base` (no authenticity token, does not support nested forms)
+1. Define a search form that inherits from [`ActionForm::Base`](https://github.com/andriy-baran/action_form) (no authenticity token, does not support nested forms)
 2. Create filters for each form input parameter
 3. Set up an initial scope for the data
 
@@ -227,7 +227,7 @@ end
 - Ruby >= 2.6
 - Rails >= 3.2, < 8.1
 - EasyParams ~> 0.6.3
-- EasyForm (for form handling)
+- ActionForm (for form handling)
 - Memery ~> 1
 
 ### Installation
@@ -254,7 +254,7 @@ gem install steel_wheel
 
 SteelWheel depends on:
 - **EasyParams**: For parameter validation and type safety
-- **EasyForm**: For form handling and validation (EasyForm::Rails::Base)
+- **[ActionForm](https://github.com/andriy-baran/action_form)**: For form handling and validation (ActionForm::Rails::Base)
 - **Memery**: For memoization of expensive operations
 - **ActiveModel**: For validation and error handling
 - **Railties**: For Rails integration and generators
@@ -554,7 +554,7 @@ The scaffold controller generator creates controllers with:
 
 - **Automatic Handler Integration**: Uses the `action` helper for seamless handler integration
 - **Success/Failure Callbacks**: Built-in success and failure handling with appropriate redirects
-- **Form Integration**: Automatic form object creation and error handling using EasyForm
+- **Form Integration**: Automatic form object creation and error handling using [ActionForm](https://github.com/andriy-baran/action_form)
 - **RESTful Actions**: Complete CRUD operations (index, show, new, create, edit, update, destroy)
 - **Flash Messages**: Success and error notifications
 - **Error Rendering**: Automatic error form rendering for create/update actions
@@ -584,7 +584,7 @@ The `action` helper accepts several parameters:
 #### Parameter Methods
 - `url_params` - Access validated URL parameters (SteelWheel::Params instance)
 - `form_params` - Access validated form parameters (EasyParams instance)
-- `form(attrs)` - Get form object with attributes (EasyForm::Rails::Base instance)
+- `form(attrs)` - Get form object with attributes ([ActionForm::Rails::Base](https://github.com/andriy-baran/action_form) instance)
 - `form_attributes` - Must be implemented to return hash of attributes for form
 
 #### Validation Methods

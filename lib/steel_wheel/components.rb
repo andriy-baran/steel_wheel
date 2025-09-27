@@ -15,7 +15,7 @@ module SteelWheel
       end
 
       def form_definition
-        @form_definition ||= Class.new(EasyForm::Rails::Base)
+        @form_definition ||= Class.new(ActionForm::Rails::Base)
       end
 
       def url_params(klass = nil, &block)

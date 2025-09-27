@@ -1,7 +1,7 @@
 class <%= controller_class_name %>::CreateHandler < ApplicationHandler
   form <%= controller_class_name %>::ModelForm
 
-  memoize def <%= singular_table_name %>
+  verify memoize def <%= singular_table_name %>
     <%= class_name %>.new(form_params.to_h)
   end
 
