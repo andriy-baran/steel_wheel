@@ -32,8 +32,8 @@ module SteelWheel
     end
 
     class << self
-      def handle(action_name = nil, input = {}, &block)
-        new(input).handle(action_name, &block)
+      def handle(input = {}, act: nil, &block)
+        new(input).handle(act: act, &block)
       end
 
       def name
@@ -51,14 +51,15 @@ module SteelWheel
       raise SteelWheel::ActionNotImplementedError, 'Subclass must implement #call'
     end
 
-    def handle(action_name = nil, &block)
+    def handle(act: nil, &block)
       yield(self) if block
       validate_preconditions
-      return unless success?
-      return unless action_name
+      return self unless success?
+      return self unless act
 
-      send(action_name)
+      send(act)
       errors.empty? ? success_callback : failure_self
+      self
     end
 
     def success?
@@ -75,20 +76,24 @@ module SteelWheel
     private
 
     def prepare_params(params)
-      params = if params.is_a?(Hash)
-                 params.deep_symbolize_keys
-               elsif params.is_a?(ActionController::Parameters)
-                 params.to_unsafe_h.deep_symbolize_keys
-               end
+      normalized_params = normalize_params(params)
       @form_scope = self.class.form_definition.scope
       @validate_form = false
       if @form_scope
-        @form_input = params.delete(@form_scope)
+        @form_input = normalized_params.delete(@form_scope)
         @validate_form = @form_input.present?
       else
-        @form_input = params
+        @form_input = normalized_params
       end
-      @input = params
+      @input = normalized_params
+    end
+
+    def normalize_params(params)
+      if params.is_a?(Hash)
+        params.deep_symbolize_keys
+      elsif params.is_a?(ActionController::Parameters)
+        params.to_unsafe_h.deep_symbolize_keys
+      end
     end
   end
 end

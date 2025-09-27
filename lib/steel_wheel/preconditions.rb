@@ -29,7 +29,7 @@ module SteelWheel
 
     def failure_self
       self.http_status = status
-      errors.delete(@form_scope)
+      errors.delete(@form_scope) if @form_scope
       failure_callback
     end
   end
