@@ -25,7 +25,7 @@ class <%= controller_class_name %>Controller < ApplicationController
   end
 
   # POST <%= route_url %>
-  action :create, act: :call do |handler|
+  action :create do |handler|
     handler.success do
       redirect_to handler.<%= singular_table_name %>, notice: '<%= human_name %> was successfully created.'
     end
@@ -38,7 +38,7 @@ class <%= controller_class_name %>Controller < ApplicationController
   end
 
   # PATCH/PUT <%= route_url %>/1
-  action :update, act: :call do |handler|
+  action :update do |handler|
     handler.success do
       redirect_to handler.<%= singular_table_name %>, notice: '<%= human_name %> was successfully updated.'
     end
@@ -51,7 +51,7 @@ class <%= controller_class_name %>Controller < ApplicationController
   end
 
   # DELETE <%= route_url %>/1
-  action :destroy, handler: :update, act: :destroy do |handler|
+  action :destroy, handler: :update do |handler|
     redirect_to <%= index_helper %>_url, notice: '<%= human_name %> was successfully destroyed.'
   end
 end

@@ -32,8 +32,8 @@ module SteelWheel
     end
 
     class << self
-      def handle(input = {}, act: nil, &block)
-        new(input).handle(act: act, &block)
+      def handle(input = {}, &block)
+        new(input).handle(&block)
       end
 
       def name
@@ -51,15 +51,18 @@ module SteelWheel
       raise SteelWheel::ActionNotImplementedError, 'Subclass must implement #call'
     end
 
-    def handle(act: nil, &block)
+    def handle(&block)
       yield(self) if block
       validate_preconditions
       return self unless success?
-      return self unless act
 
-      send(act)
+      on_validation_success
       errors.empty? ? success_callback : failure_self
       self
+    end
+
+    def on_validation_success
+      # NOOP
     end
 
     def success?
@@ -74,6 +77,10 @@ module SteelWheel
     end
 
     private
+
+    def current_action
+      ActiveSupport::StringInquirer.new(url_params.action)
+    end
 
     def prepare_params(params)
       normalized_params = normalize_params(params)
