@@ -11,7 +11,7 @@ module SteelWheel # rubocop:disable Style/Documentation
     module ClassMethods # rubocop:disable Style/Documentation
       def action(action_name, handler: action_name, &block)
         define_method(action_name) do
-          handler_klass = handler_class_for(class_name, handler)
+          handler_klass = handler_class_for(handler)
           handler_klass.handle(params) do |handler_instance|
             handler_instance.helpers = view_context
             instance_exec(handler_instance, &block)
@@ -22,10 +22,11 @@ module SteelWheel # rubocop:disable Style/Documentation
     end
 
     module InstanceMethods # rubocop:disable Style/Documentation
-      def handler_class_for(class_name, action_name = params[:action])
-        return class_name.constantize if class_name
+      def handler_class_for(handler)
+        different_namespace = handler.to_s.split('/').size > 1
+        return "#{handler.to_s.camelize}Handler".constantize if different_namespace
 
-        "#{[params[:controller], action_name].compact.join('/')}_handler".classify.constantize
+        "#{[params[:controller], handler].compact.join('/')}_handler".classify.constantize
       end
 
       def failure_callbacks(handler)

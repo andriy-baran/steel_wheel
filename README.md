@@ -44,7 +44,7 @@ The complete operation flow follows this sequence:
 
 2. **Validation Phase**
    ```ruby
-   handler.handle(:call) do |handler|
+   handler.handle do |handler|
      # 1. Validates url_params
      # 2. Validates form_params (if present)
      # 3. Validates handler custom validations
@@ -54,8 +54,10 @@ The complete operation flow follows this sequence:
 
 3. **Execution Phase** (only if validation passes)
    ```ruby
-   # Calls the specified method (default: :call)
-   handler.send(:call)
+   # Calls on_validation_success hook
+   handler.on_validation_success
+   # Then calls the call method
+   handler.call
    ```
 
 4. **Callback Phase**
@@ -116,7 +118,7 @@ This ensures seamless integration between validation, form handling, and view re
 #### Form Integration in Controllers
 ```ruby
 class ProductsController < ApplicationController
-  action :create, act: :call do |handler|
+  action :create do |handler|
     handler.success do
       redirect_to handler.product, notice: 'Product was successfully created.'
     end
@@ -360,7 +362,7 @@ end
 
 #### Callbacks
 ```ruby
-Products::CreateHandler.handle(:call, params) do |handler|
+Products::CreateHandler.handle(params) do |handler|
   handler.success do |handler|
     # Send notification email
     ProductMailer.created(handler.product).deliver_now
@@ -374,6 +376,86 @@ Products::CreateHandler.handle(:call, params) do |handler|
   handler.failure(:not_found) do |handler|
     # render not found page
     render file: Rails.root.join('public', '404.html').to_s, status: handler.http_status
+  end
+end
+```
+
+#### Validation Success Hook
+
+The `on_validation_success` method is a powerful hook that allows you to execute code after all validations pass but before the main business logic runs. This is perfect for:
+
+- **Action-specific logic**: Different behavior based on the current action
+- **Pre-processing**: Setting up data or performing preliminary operations
+- **Conditional execution**: Deciding whether to proceed with the main operation
+
+```ruby
+class Products::UpdateHandler < ApplicationHandler
+  def on_validation_success
+    # Only update if this is an update action
+    call if current_action.update?
+  end
+
+  def call
+    product.update!(form_params.to_h)
+  end
+end
+```
+
+#### Action-Based Logic
+
+Use `current_action` to implement different behavior based on the controller action. The `current_action` method returns a StringInquirer object, so you can use methods like `current_action.create?`, `current_action.update?`, etc.:
+
+```ruby
+class Products::CrudHandler < ApplicationHandler
+  def on_validation_success
+    case current_action
+    when 'create'
+      create_product
+    when 'update'
+      update_product
+    when 'destroy'
+      destroy_product
+    end
+  end
+
+  private
+
+  def create_product
+    @product = Product.create!(form_params.to_h)
+  end
+
+  def update_product
+    product.update!(form_params.to_h)
+  end
+
+  def destroy_product
+    product.destroy!
+  end
+end
+```
+
+#### Pre-processing and Setup
+
+Use the hook for setup operations that should only run after validation:
+
+```ruby
+class Orders::CreateHandler < ApplicationHandler
+  def on_validation_success
+    # Set up order context after validation passes
+    setup_order_context
+    call
+  end
+
+  private
+
+  def setup_order_context
+    @order = Order.new(form_params.to_h)
+    @order.user = current_user
+    @order.status = 'pending'
+  end
+
+  def call
+    @order.save!
   end
 end
 ```
@@ -516,7 +598,7 @@ class ProductsController < ApplicationController
   end
 
   # POST /products
-  action :create, act: :call do |handler| # act tells handler to call provided method after completion of validation process
+  action :create do |handler|
     handler.success do
       redirect_to handler.product, notice: 'Product was successfully created.'
     end
@@ -529,7 +611,7 @@ class ProductsController < ApplicationController
   end
 
   # PATCH/PUT /products/1
-  action :update, act: :call do |handler|
+  action :update do |handler|
     handler.success do
       redirect_to handler.product, notice: 'Product was successfully updated.'
     end
@@ -542,7 +624,7 @@ class ProductsController < ApplicationController
   end
 
   # DELETE /products/1
-  action :destroy, handler: :update, act: :destroy do |handler|
+  action :destroy, handler: :update do |handler|
     redirect_to products_url, notice: 'Product was successfully destroyed.'
   end
 end
@@ -566,10 +648,16 @@ The scaffold controller generator creates controllers with:
 The `action` helper accepts several parameters:
 
 - `action_name` - The controller action name
-- `class_name` - Custom handler class name (optional)
 - `handler` - Handler name (defaults to action_name)
-- `act` - Method to call on handler (default `nil`)
 - `&block` - Block executed with handler instance
+
+#### Handler Class Resolution
+
+SteelWheel automatically resolves handler classes based on the `handler` parameter:
+
+- **Same namespace**: `handler: 'update'` → `Products::UpdateHandler`
+- **Different namespace**: `handler: 'shared/update'` → `Shared::UpdateHandler`
+- **Default behavior**: `action :destroy` → `handler: 'destroy'` → `Products::DestroyHandler`
 
 ## API Reference
 
@@ -577,7 +665,8 @@ The `action` helper accepts several parameters:
 
 #### Core Methods
 - `call` - Main business logic method (must be implemented by subclasses)
-- `handle(action_name, &block)` - Execute handler with optional action and block
+- `handle(&block)` - Execute handler with optional block
+- `on_validation_success` - Hook called after validation passes, before `call` method
 - `success?` - Returns true if handler executed successfully
 - `status` - Returns HTTP status code based on validation results
 
@@ -586,6 +675,7 @@ The `action` helper accepts several parameters:
 - `form_params` - Access validated form parameters (EasyParams instance)
 - `form(attrs)` - Get form object with attributes ([ActionForm::Rails::Base](https://github.com/andriy-baran/action_form) instance)
 - `form_attributes` - Must be implemented to return hash of attributes for form
+- `current_action` - Returns the current controller action as a StringInquirer object
 
 #### Validation Methods
 - `depends_on(*attrs, validate_provided: true)` - Define required dependencies
@@ -624,8 +714,8 @@ SteelWheel automatically integrates with Rails through a Railtie that:
 - Includes default failure callbacks for 404 errors
 
 #### Controller Helpers
-- `action(action_name, class_name: nil, handler: action_name, act: nil, &block)` - Define controller action with handler integration
-- `handler_class_for(class_name, action_name)` - Resolve handler class for controller action
+- `action(action_name, handler: action_name, &block)` - Define controller action with handler integration
+- `handler_class_for(handler)` - Resolve handler class for controller action
 - `failure_callbacks(handler)` - Set up default failure callbacks for handlers
 
 #### Handler Attributes

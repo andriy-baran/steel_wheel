@@ -213,7 +213,7 @@ RSpec.describe SteelWheel::Handler do
         callback_executed = false
         callback_value = nil
 
-        callback_handler_class.handle({ id: 1 }, act: :call) do |handler|
+        callback_handler_class.handle({ id: 1 }) do |handler|
           handler.success do |h|
             callback_executed = true
             callback_value = 'success_callback_executed'
@@ -232,10 +232,12 @@ RSpec.describe SteelWheel::Handler do
               integer :id, presence: { message: "can't be blank" }
             end
 
-
-            def call
+            validate do
               errors.add(:base, :not_found, message: 'Resource not found')
               self.http_status = :not_found
+            end
+
+            def call
               { result: 'failure' }
             end
           end
@@ -246,7 +248,7 @@ RSpec.describe SteelWheel::Handler do
         callback_executed = false
         callback_status = nil
 
-        failure_callback_handler_class.handle({ id: 1 }, act: :call) do |handler|
+        failure_callback_handler_class.handle({ id: 1 }) do |handler|
           handler.failure :not_found do |h|
             callback_executed = true
             callback_status = :not_found
@@ -265,10 +267,12 @@ RSpec.describe SteelWheel::Handler do
               integer :id, presence: { message: "can't be blank" }
             end
 
-
-            def call
+            validate do
               errors.add(:base, :forbidden, message: 'Access denied')
               self.http_status = :forbidden
+            end
+
+            def call
               { result: 'failure' }
             end
           end
@@ -279,7 +283,7 @@ RSpec.describe SteelWheel::Handler do
         callback_executed = false
         callback_status = nil
 
-        multi_failure_callback_handler_class.handle({ id: 1 }, act: :call) do |handler|
+        multi_failure_callback_handler_class.handle({ id: 1 }) do |handler|
           handler.failure :not_found, :forbidden do |h|
             callback_executed = true
             callback_status = h.http_status
@@ -306,7 +310,7 @@ RSpec.describe SteelWheel::Handler do
       end
 
       it 'executes without errors when no callbacks are defined' do
-        result = no_callback_handler_class.handle({ id: 1 }, act: :call)
+        result = no_callback_handler_class.handle({ id: 1 })
         expect(result).to be_a(SteelWheel::Handler)
         expect(result.errors.empty?).to be true
       end
@@ -464,21 +468,26 @@ RSpec.describe SteelWheel::Handler do
         end
       end
 
-      it 'resolves handler class names correctly' do
+      it 'resolves handler class names correctly for same namespace' do
         controller = test_controller_class.new
 
-        CustomHandler = Class.new
-        custom_handler_class = controller.handler_class_for('CustomHandler', 'index')
+        # Create the Users module and handler class
+        Users = Module.new
+        Users::IndexHandler = Class.new(SteelWheel::Handler)
+        handler_class = controller.handler_class_for('index')
 
-        expect(custom_handler_class).to eq CustomHandler
-        expected_class_name = "#{[controller.params[:controller], 'index'].compact.join('/')}_handler".classify
-        expect(expected_class_name).to eq 'Users::IndexHandler'
+        expect(handler_class).to eq Users::IndexHandler
       end
 
-      it 'resolves handler class names without custom class name' do
+      it 'resolves handler class names for different namespace' do
         controller = test_controller_class.new
 
-        expect { controller.handler_class_for(nil, 'index') }.to raise_error(NameError, /uninitialized constant Users/)
+        # Create the Shared module and handler class
+        Shared = Module.new
+        Shared::UpdateHandler = Class.new(SteelWheel::Handler)
+        handler_class = controller.handler_class_for('shared/update')
+
+        expect(handler_class).to eq Shared::UpdateHandler
       end
 
       it 'sets up failure callbacks on handler' do
@@ -528,14 +537,26 @@ RSpec.describe SteelWheel::Handler do
         end
 
         controller_instance = controller_class.new
-        controller_instance.params = { id: 1 }
+        controller_instance.params = { controller: 'users', action: 'test_action', id: 1 }
 
-        controller_class.action('test_action', class_name: 'TestHandler') do |handler_instance|
-          handler_instance.class == TestHandler
+        # Create the expected handler class - the logic creates Users::TestActionHandler
+        Users = Module.new unless defined?(Users)
+        Users::TestActionHandler = Class.new(SteelWheel::Handler) do
+          url_params do
+            integer :id, presence: { message: "can't be blank" }
+          end
+
+          def call
+            { result: 'success' }
+          end
+        end
+
+        controller_class.action('test_action', handler: 'test_action') do |handler_instance|
+          handler_instance.class == Users::TestActionHandler
         end
         result = controller_instance.test_action
 
-        expect(result).to be_a(TestHandler)
+        expect(result).to be_a(Users::TestActionHandler)
         expect(result.http_status).to eq(:ok)
       end
     end
