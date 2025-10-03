@@ -9,6 +9,10 @@ class <%= controller_class_name %>::CreateHandler < ApplicationHandler
     { model: <%= singular_table_name %> }
   end
 
+  def on_validation_success
+    call if current_action.create?
+  end
+
   def call
     <%= singular_table_name %>.save
   end
