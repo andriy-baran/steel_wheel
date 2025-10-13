@@ -5,7 +5,7 @@ class <%= controller_class_name %>::UpdateHandler < ApplicationHandler
     integer :id, presence: true
   end
 
-  finder :<%= singular_table_name %>, -> { <%= class_name %>.find_by(id: url_params.id) }, validate_existence: true
+  finder :<%= file_name %>, -> { <%= singular_name.camelize %>.find_by(id: url_params.id) }, validate_existence: true
 
   def on_validation_success
     call if current_action.update?
@@ -13,15 +13,19 @@ class <%= controller_class_name %>::UpdateHandler < ApplicationHandler
   end
 
   def call
-    <%= singular_table_name %>.update(form_params.to_h)
+    <%= file_name %>.update(form_params.to_h)
   end
 
   def destroy
-    <%= singular_table_name %>.destroy
+    <%= file_name %>.destroy
   end
 
   def form_attributes
-    { model: <%= singular_table_name %> }
+    <%- if controller_class_path.empty? -%>
+    { model: <%= file_name %> }
+    <%- else -%>
+    { model: [<%= controller_class_path.map{|path| ":#{path}"}.join(', ') %>, <%= file_name %>] }
+    <%- end -%>
   end
 end
 

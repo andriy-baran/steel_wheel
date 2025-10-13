@@ -1,8 +1,8 @@
 module <%= controller_class_name %>
   class ModelForm < ActionForm::Rails::Base
-    resource_model <%= class_name %>
-
+    resource_model <%= singular_name.camelize %>
     <%- simple_params.each do |attribute| -%>
+
     element :<%= attribute.column_name %> do
       <%- if attribute.type == :boolean -%>
       input(type: :checkbox)
@@ -27,7 +27,6 @@ module <%= controller_class_name %>
       output(type: :string, presence: true)
       <%- end -%>
     end
-
     <%- end -%>
   end
 end

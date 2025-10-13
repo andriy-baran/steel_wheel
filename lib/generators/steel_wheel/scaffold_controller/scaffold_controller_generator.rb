@@ -31,18 +31,18 @@ module SteelWheel
 
       def copy_files
         if behavior == :revoke
-          template 'index.rb', "app/handlers/#{controller_file_name}/index_handler.rb"
-          template 'create.rb', "app/handlers/#{controller_file_name}/create_handler.rb"
-          template 'update.rb', "app/handlers/#{controller_file_name}/update_handler.rb"
-          template 'model_form.rb', "app/handlers/#{controller_file_name}/model_form.rb"
-          template 'search_form.rb', "app/handlers/#{controller_file_name}/search_form.rb"
+          template 'index.rb', "app/handlers/#{controller_file_path}/index_handler.rb"
+          template 'create.rb', "app/handlers/#{controller_file_path}/create_handler.rb"
+          template 'update.rb', "app/handlers/#{controller_file_path}/update_handler.rb"
+          template 'model_form.rb', "app/handlers/#{controller_file_path}/model_form.rb"
+          template 'search_form.rb', "app/handlers/#{controller_file_path}/search_form.rb"
         elsif behavior == :invoke
-          empty_directory Pathname.new('app/handlers').join(controller_file_name)
-          template 'index.rb', "app/handlers/#{controller_file_name}/index_handler.rb"
-          template 'create.rb', "app/handlers/#{controller_file_name}/create_handler.rb"
-          template 'update.rb', "app/handlers/#{controller_file_name}/update_handler.rb"
-          template 'model_form.rb', "app/handlers/#{controller_file_name}/model_form.rb"
-          template 'search_form.rb', "app/handlers/#{controller_file_name}/search_form.rb"
+          empty_directory Pathname.new('app/handlers').join(controller_file_path)
+          template 'index.rb', "app/handlers/#{controller_file_path}/index_handler.rb"
+          template 'create.rb', "app/handlers/#{controller_file_path}/create_handler.rb"
+          template 'update.rb', "app/handlers/#{controller_file_path}/update_handler.rb"
+          template 'model_form.rb', "app/handlers/#{controller_file_path}/model_form.rb"
+          template 'search_form.rb', "app/handlers/#{controller_file_path}/search_form.rb"
         end
       end
 

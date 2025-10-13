@@ -1,12 +1,16 @@
 class <%= controller_class_name %>::CreateHandler < ApplicationHandler
   form <%= controller_class_name %>::ModelForm
 
-  verify memoize def <%= singular_table_name %>
-    <%= class_name %>.new(form_params.to_h)
+  verify memoize def <%= file_name %>
+    <%= singular_name.camelize %>.new(form_params.to_h)
   end
 
   def form_attributes
-    { model: <%= singular_table_name %> }
+    <%- if controller_class_path.empty? -%>
+    { model: <%= file_name %> }
+    <%- else -%>
+    { model: [<%= controller_class_path.map{|path| ":#{path}"}.join(', ') %>, <%= file_name %>] }
+    <%- end -%>
   end
 
   def on_validation_success
@@ -14,6 +18,6 @@ class <%= controller_class_name %>::CreateHandler < ApplicationHandler
   end
 
   def call
-    <%= singular_table_name %>.save
+    <%= file_name %>.save
   end
 end

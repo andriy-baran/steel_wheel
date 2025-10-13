@@ -4,14 +4,14 @@ class <%= controller_class_name %>::IndexHandler < ApplicationHandler
   end
 
   form <%= controller_class_name %>::SearchForm
-
   <%- simple_params.each do |attribute| -%>
+
   filter :<%= attribute.column_name %> do |scope, value|
     scope.where(<%= attribute.column_name %>: value)
   end
-
   <%- end -%>
-  filterable def <%= plural_table_name %>
-    <%= class_name %>.all
+
+  filterable def <%= controller_file_name %>
+    <%= singular_name.camelize %>.all
   end
 end

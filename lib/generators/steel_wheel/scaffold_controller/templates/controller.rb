@@ -3,35 +3,39 @@ class <%= controller_class_name %>Controller < ApplicationController
 
   # GET <%= route_url %>
   action :index do |handler|
-    @<%= plural_table_name %> = handler.<%= plural_table_name %>
+    @<%= controller_file_name %> = handler.<%= controller_file_name %>
     @form = handler.form
   end
 
   # GET <%= route_url %>/1
   action :show, handler: :update do |handler|
-    @<%= singular_table_name %> = handler.<%= singular_table_name %>
+    @<%= file_name %> = handler.<%= file_name %>
   end
 
   # GET <%= route_url %>/new
   action :new, handler: :create do |handler|
-    @<%= singular_table_name %> = handler.<%= singular_table_name %>
+    @<%= file_name %> = handler.<%= file_name %>
     @form = handler.form
   end
 
   # GET <%= route_url %>/1/edit
   action :edit, handler: :update do |handler|
-    @<%= singular_table_name %> = handler.<%= singular_table_name %>
+    @<%= file_name %> = handler.<%= file_name %>
     @form = handler.form
   end
 
   # POST <%= route_url %>
   action :create do |handler|
     handler.success do
-      redirect_to handler.<%= singular_table_name %>, notice: '<%= human_name %> was successfully created.'
+      <%- if controller_class_path.empty? -%>
+      redirect_to handler.<%= file_name %>, notice: '<%= human_name %> was successfully created.'
+      <%- else -%>
+      redirect_to [<%= controller_class_path.map{|path| ":#{path}"}.join(', ') %>, handler.<%= file_name %>], notice: '<%= human_name %> was successfully created.'
+      <%- end -%>
     end
 
     handler.failure do
-      @<%= singular_table_name %> = handler.<%= singular_table_name %>
+      @<%= file_name %> = handler.<%= file_name %>
       @form = handler.form
       render :new
     end
@@ -40,12 +44,16 @@ class <%= controller_class_name %>Controller < ApplicationController
   # PATCH/PUT <%= route_url %>/1
   action :update do |handler|
     handler.success do
-      redirect_to handler.<%= singular_table_name %>, notice: '<%= human_name %> was successfully updated.'
+      <%- if controller_class_path.empty? -%>
+      redirect_to handler.<%= file_name %>, notice: '<%= human_name %> was successfully updated.'
+      <%- else -%>
+      redirect_to [<%= controller_class_path.map{|path| ":#{path}"}.join(', ') %>, handler.<%= file_name %>], notice: '<%= human_name %> was successfully updated.'
+      <%- end -%>
     end
 
     handler.failure do
       @form = handler.form
-      @<%= singular_table_name %> = handler.<%= singular_table_name %>
+      @<%= file_name %> = handler.<%= file_name %>
       render :edit
     end
   end
