@@ -13,6 +13,7 @@ module SteelWheel # rubocop:disable Style/Documentation
         define_method(action_name) do
           handler_klass = handler_class_for(handler)
           handler_klass.handle(params) do |handler_instance|
+            handler_instance.owner = self
             handler_instance.helpers = view_context
             instance_exec(handler_instance, &block)
             failure_callbacks(handler_instance)

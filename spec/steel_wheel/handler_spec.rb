@@ -363,9 +363,11 @@ RSpec.describe SteelWheel::Handler do
       end
 
       it 'handles scoped form with success callback' do
+        owner = double('owner', request: double('request', request_method: 'POST', path: '/users/1'))
         callback_executed = false
 
         result = scoped_form_callback_handler_class.handle({ id: 1, user: { name: 'John' } }) do |handler|
+          handler.owner = owner
           handler.failure :unprocessable_entity do |h|
             callback_executed = true
           end

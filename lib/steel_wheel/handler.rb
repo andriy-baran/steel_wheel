@@ -14,6 +14,7 @@ module SteelWheel
     include SteelWheel::Shortcuts
     include SteelWheel::Callbacks
     include SteelWheel::Preconditions
+    include SteelWheel::Composition
 
     attr_reader :input, :form_input
     attr_accessor :http_status, :helpers
