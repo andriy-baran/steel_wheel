@@ -91,7 +91,7 @@ module SteelWheel
         @form_input = normalized_params.delete(@form_scope)
         @validate_form = @form_input.present?
       else
-        @form_input = normalized_params
+        @form_input = normalized_params.except(*self.class.url_params_definition.schema.keys)
       end
       @input = normalized_params
     end

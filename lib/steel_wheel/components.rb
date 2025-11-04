@@ -47,7 +47,25 @@ module SteelWheel
       end
 
       def form(attrs = form_attributes)
-        @form ||= self.class.form_definition.new(owner: self, **attrs)
+        @form ||= create_form(attrs)
+      end
+
+      private
+
+      def create_form(attrs)
+        if form_input.present?
+          create_form_from_form_params
+        else
+          create_form_from_definition(attrs)
+        end
+      end
+
+      def create_form_from_definition(attrs)
+        self.class.form_definition.new(owner: self, **attrs)
+      end
+
+      def create_form_from_form_params
+        form_params&.create_form(owner: self, method: owner_request.request_method, action: owner_request.path)
       end
 
       def form_attributes

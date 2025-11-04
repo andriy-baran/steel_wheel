@@ -1,6 +1,6 @@
 class <%= controller_class_name %>::IndexHandler < ApplicationHandler
   def form_attributes
-    { method: :get, action: helpers.<%= index_helper %>_path, params: form_params }
+    { method: :get, action: helpers.<%= index_helper %>_path }
   end
 
   form <%= controller_class_name %>::SearchForm

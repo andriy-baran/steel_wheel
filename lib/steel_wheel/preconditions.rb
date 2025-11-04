@@ -23,7 +23,7 @@ module SteelWheel
 
     def failure_form
       self.http_status = :unprocessable_entity
-      @form = form.with_params(form_params)
+      @form = create_form_from_form_params
       failure_callback
     end
 
