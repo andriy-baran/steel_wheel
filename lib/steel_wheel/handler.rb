@@ -76,11 +76,11 @@ module SteelWheel
       errors.map(&:type).first
     end
 
-    private
-
     def current_action
       ActiveSupport::StringInquirer.new(url_params.action)
     end
+
+    private
 
     def prepare_params(params)
       normalized_params = normalize_params(params)

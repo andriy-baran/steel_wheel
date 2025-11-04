@@ -14,6 +14,14 @@ module SteelWheel
         @url_params_definition ||= Class.new(SteelWheel::Params)
       end
 
+      def form_params_definition
+        @form_params_definition ||= if form_definition.scope
+                                      form_definition.params_definition.schema[form_definition.scope].class
+                                    else
+                                      form_definition.params_definition
+                                    end
+      end
+
       def form_definition
         @form_definition ||= Class.new(ActionForm::Rails::Base)
       end
@@ -35,15 +43,11 @@ module SteelWheel
       end
 
       def form_params
-        @form_params ||= if @form_scope
-                           self.class.form_definition.params_definition.schema[@form_scope].class.new(form_input)
-                         else
-                           self.class.form_definition.params_definition.new(form_input)
-                         end
+        @form_params ||= self.class.form_params_definition.new(form_input)
       end
 
       def form(attrs = form_attributes)
-        @form ||= self.class.form_definition.new(**attrs)
+        @form ||= self.class.form_definition.new(owner: self, **attrs)
       end
 
       def form_attributes
