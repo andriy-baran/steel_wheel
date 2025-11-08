@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     steel_wheel (0.8.0)
-      action_form (~> 0.6.3)
+      action_form (~> 0.6.5)
       easy_params (~> 0.9.1)
       memery (~> 1)
       railties (>= 3.2, < 9)
@@ -10,7 +10,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    action_form (0.6.3)
+    action_form (0.6.5)
       easy_params (~> 0.9.1)
       phlex (>= 2)
       railties (>= 6.0.0)

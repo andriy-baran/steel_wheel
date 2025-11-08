@@ -15,11 +15,7 @@ module SteelWheel
       end
 
       def form_params_definition
-        @form_params_definition ||= if form_definition.scope
-                                      form_definition.params_definition.schema[form_definition.scope].class
-                                    else
-                                      form_definition.params_definition
-                                    end
+        @form_params_definition ||= form_definition.params_definition
       end
 
       def form_definition
