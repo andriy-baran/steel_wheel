@@ -9,20 +9,35 @@ module SteelWheel # rubocop:disable Style/Documentation
     end
 
     module ClassMethods # rubocop:disable Style/Documentation
-      def action(action_name, handler: action_name, &block)
+      def action(action_name, handler: action_name, with_handlers: [], &block)
+        composed_handlers = Array(with_handlers)
+
         define_method(action_name) do
-          handler_klass = handler_class_for(handler)
-          handler_klass.handle(params) do |handler_instance|
-            handler_instance.owner = self
-            handler_instance.helpers = view_context
-            instance_exec(handler_instance, &block)
-            failure_callbacks(handler_instance)
-          end
+          run_action(handler, composed_handlers, &block)
         end
       end
     end
 
     module InstanceMethods # rubocop:disable Style/Documentation
+      def run_action(handler, composed_handlers, &block)
+        compose_handler(handler).handle do |primary_handler|
+          if composed_handlers.empty?
+            instance_exec(primary_handler, &block)
+          else
+            handlers = [primary_handler, *composed_handlers.map { |name| compose_handler(name) }]
+            instance_exec(*handlers, &block)
+          end
+          failure_callbacks(primary_handler)
+        end
+      end
+
+      def compose_handler(handler_name, handler_params = params)
+        handler_class_for(handler_name).new(handler_params).tap do |handler|
+          handler.helpers = view_context
+          handler.owner = self
+        end
+      end
+
       def handler_class_for(handler)
         different_namespace = handler.to_s.split('/').size > 1
         return "#{handler.to_s.camelize}Handler".constantize if different_namespace
